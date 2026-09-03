@@ -21,6 +21,16 @@ public class Ingredient {
         this.weight = 100;
     }
 
+    public Ingredient(Long id, String name, Integer kcal, Integer protein, Integer carbohydrates, Integer fats, Integer weight) {
+        this.id = id;
+        this.name = name;
+        this.kcal = kcal;
+        this.protein = protein;
+        this.carbohydrates = carbohydrates;
+        this.fats = fats;
+        this.weight = weight;
+    }
+
     public Long getId() {
         return id;
     }

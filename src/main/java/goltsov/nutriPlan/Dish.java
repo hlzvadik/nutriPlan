@@ -18,6 +18,16 @@ public class Dish {
         this.name = name;
     }
 
+    public Dish(Long id, String name, int kcal, int protein, int carbohydrates, int fats, int rawWeight) {
+        this.id = id;
+        this.name = name;
+        this.kcal = kcal;
+        this.protein = protein;
+        this.carbohydrates = carbohydrates;
+        this.fats = fats;
+        this.rawWeight = rawWeight;
+    }
+
     public Long getId() {
         return id;
     }
