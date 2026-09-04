@@ -1,14 +1,18 @@
 package goltsov.nutriPlan;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class DishService {
     private final DishRepository dishRepository;
+    private final DishIngredientService dishIngredientService;
 
-    public DishService(DishRepository dishRepository) {
+    public DishService(DishRepository dishRepository, DishIngredientService dishIngredientService) {
         this.dishRepository = dishRepository;
+        this.dishIngredientService = dishIngredientService;
     }
 
     public Dish getDishById(Long dishId) {
@@ -56,7 +60,8 @@ public class DishService {
                 dishEntity.getProtein(),
                 dishEntity.getCarbohydrates(),
                 dishEntity.getFats(),
-                dishEntity.getRawWeight()
+                dishEntity.getRawWeight(),
+                dishIngredientService.getIngredientsOfDishById(dishEntity.getId())
         );
     }
 

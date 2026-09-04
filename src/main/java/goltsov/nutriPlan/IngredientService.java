@@ -1,9 +1,11 @@
 package goltsov.nutriPlan;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class IngredientService {
     private final IngredientRepository ingredientRepository;
 
