@@ -1,32 +1,25 @@
-package goltsov.nutriPlan;
+package goltsov.nutriPlan.baseclasses;
 
-
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "ingredients")
-public class IngredientEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
-    @Column(name = "name")
+public class Ingredient {
+    private final Long id;
     private String name;
-    @Column(name = "kcal")
     private Integer kcal;
-    @Column(name = "protein")
     private Integer protein;
-    @Column(name = "carbohydrates")
     private Integer carbohydrates;
-    @Column(name = "fats")
     private Integer fats;
-    @Column(name = "weight")
     private Integer weight;
 
-    public IngredientEntity() {
+    public Ingredient(Long id, String name, Integer kcal, Integer protein, Integer carbohydrates, Integer fats) {
+        this.id = id;
+        this.name = name;
+        this.kcal = kcal;
+        this.protein = protein;
+        this.carbohydrates = carbohydrates;
+        this.fats = fats;
+        this.weight = 100;
     }
 
-    public IngredientEntity(Long id, String name, Integer kcal, Integer protein, Integer carbohydrates, Integer fats, Integer weight) {
+    public Ingredient(Long id, String name, Integer kcal, Integer protein, Integer carbohydrates, Integer fats, Integer weight) {
         this.id = id;
         this.name = name;
         this.kcal = kcal;
@@ -38,10 +31,6 @@ public class IngredientEntity {
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getName() {

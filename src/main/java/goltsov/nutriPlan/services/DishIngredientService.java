@@ -1,7 +1,11 @@
-package goltsov.nutriPlan;
+package goltsov.nutriPlan.services;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
-import org.springframework.data.crossstore.ChangeSetPersister;
+import goltsov.nutriPlan.baseclasses.Ingredient;
+import goltsov.nutriPlan.entities.DishIngredientEntity;
+import goltsov.nutriPlan.entities.IngredientEntity;
+import goltsov.nutriPlan.repositories.DishIngredientRepository;
+import goltsov.nutriPlan.repositories.IngredientRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -51,7 +55,7 @@ public class DishIngredientService {
 
     public void deleteDishById(Long dishId) {
         if (dishIngredientRepository.deleteAllByDishId(dishId).equals(0L)) {
-            throw new NoSuchElementException("Not found dish with id=" + dishId);
+            throw new EntityNotFoundException("Not found dish with id=" + dishId);
         }
     }
 
@@ -70,7 +74,7 @@ public class DishIngredientService {
     public void reduceIngredientWeightByDishIdIngredientIdWeight(Long dishId, Long ingredientId, Long weight) {
         List<DishIngredientEntity> dishIngredientEntities = dishIngredientRepository.findAllByDishIdAndIngredientId(dishId, ingredientId);
         if (dishIngredientEntities.isEmpty()) {
-            throw new NoSuchElementException("Not found entity with dishId="+dishId+", ingredientId="+ingredientId);
+            throw new EntityNotFoundException("Not found entity with dishId="+dishId+", ingredientId="+ingredientId);
         }
         if (dishIngredientEntities.getFirst().getWeight().equals(weight)) {
             dishIngredientRepository.deleteAllByDishIdAndIngredientId(dishId, ingredientId);
@@ -84,7 +88,7 @@ public class DishIngredientService {
 
     public void deleteIngredientByIngredientIdAndDishId(Long dishId, Long ingredientId) {
         if (dishIngredientRepository.deleteAllByDishIdAndIngredientId(dishId, ingredientId).equals(0L)) {
-            throw new NoSuchElementException("Not found entity with dishId="+dishId+", ingredientId="+ingredientId);
+            throw new EntityNotFoundException("Not found entity with dishId="+dishId+", ingredientId="+ingredientId);
         }
     }
 }

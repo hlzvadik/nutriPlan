@@ -1,7 +1,6 @@
-package goltsov.nutriPlan;
+package goltsov.nutriPlan.entities;
 
 import jakarta.persistence.*;
-import org.springframework.resilience.annotation.ConcurrencyLimit;
 
 @Entity
 @Table(name = "dish_ingredient")

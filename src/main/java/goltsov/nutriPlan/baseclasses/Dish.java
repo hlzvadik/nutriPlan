@@ -1,4 +1,4 @@
-package goltsov.nutriPlan;
+package goltsov.nutriPlan.baseclasses;
 
 import java.util.Map;
 import java.util.NoSuchElementException;

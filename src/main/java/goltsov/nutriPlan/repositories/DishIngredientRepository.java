@@ -1,5 +1,6 @@
-package goltsov.nutriPlan;
+package goltsov.nutriPlan.repositories;
 
+import goltsov.nutriPlan.entities.DishIngredientEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

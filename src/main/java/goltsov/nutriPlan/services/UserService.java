@@ -1,5 +1,8 @@
-package goltsov.nutriPlan;
+package goltsov.nutriPlan.services;
 
+import goltsov.nutriPlan.baseclasses.User;
+import goltsov.nutriPlan.entities.UserEntity;
+import goltsov.nutriPlan.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 

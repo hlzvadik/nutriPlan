@@ -1,4 +1,4 @@
-package goltsov.nutriPlan;
+package goltsov.nutriPlan.entities;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
