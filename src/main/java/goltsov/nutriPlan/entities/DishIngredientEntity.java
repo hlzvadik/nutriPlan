@@ -29,6 +29,10 @@ public class DishIngredientEntity {
         this.weight = weight;
     }
 
+    public DishIngredientEntity() {
+
+    }
+
     public Long getId() {
         return id;
     }

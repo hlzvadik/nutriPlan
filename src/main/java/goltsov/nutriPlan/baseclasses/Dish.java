@@ -1,5 +1,6 @@
 package goltsov.nutriPlan.baseclasses;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -13,9 +14,15 @@ public class Dish {
     private int rawWeight;
     private Map<Ingredient, Integer> ingredientWeightMap;
 
-    public Dish(Long id, String name, int kcal, int protein, int carbohydrates, int fats, int rawWeight, Map<Ingredient, Long> ingredientsOfDishById) {
+    public Dish(Long id, String name, int kcal, int protein, int carbohydrates, int fats, int rawWeight, Map<Ingredient, Integer> ingredientWeightMap) {
         this.id = id;
         this.name = name;
+        this.kcal = kcal;
+        this.protein = protein;
+        this.carbohydrates = carbohydrates;
+        this.fats = fats;
+        this.rawWeight = rawWeight;
+        this.ingredientWeightMap = Map.copyOf(ingredientWeightMap);
     }
 
     public Dish(Long id, String name, int kcal, int protein, int carbohydrates, int fats, int rawWeight) {
@@ -26,17 +33,6 @@ public class Dish {
         this.carbohydrates = carbohydrates;
         this.fats = fats;
         this.rawWeight = rawWeight;
-    }
-
-    public Dish(Long id, String name, int kcal, int protein, int carbohydrates, int fats, int rawWeight, Map<Ingredient, Integer> ingredientWeightMap) {
-        this.id = id;
-        this.name = name;
-        this.kcal = kcal;
-        this.protein = protein;
-        this.carbohydrates = carbohydrates;
-        this.fats = fats;
-        this.rawWeight = rawWeight;
-        this.ingredientWeightMap = ingredientWeightMap;
     }
 
     public Long getId() {

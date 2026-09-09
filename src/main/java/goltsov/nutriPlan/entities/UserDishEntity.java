@@ -56,6 +56,10 @@ public class UserDishEntity {
         this.date = date;
     }
 
+    public UserDishEntity() {
+
+    }
+
     public Long getId() {
         return id;
     }

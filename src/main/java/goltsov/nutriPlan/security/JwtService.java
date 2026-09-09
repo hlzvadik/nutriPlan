@@ -38,26 +38,26 @@ public class JwtService {
         log.info("JWT Service initialized");
     }
 
-    private String generateToken(String username, SecretKey key, long expiration) {
+    private String generateToken(String userEmail, SecretKey key, long expiration) {
         return Jwts.builder()
-                .subject(username)
+                .subject(userEmail)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key)
                 .compact();
     }
 
-    public String generateAccessToken(String username) {
-        return generateToken(username, accessKey, accessExpiration);
+    public String generateAccessToken(String userEmail) {
+        return generateToken(userEmail, accessKey, accessExpiration);
     }
 
     public String generateRefreshToken(String username) {
         return generateToken(username, refreshKey, refreshExpiration);
     }
 
-    public String generateAccessTokenWithClaims(String username, List<String> roles) {
+    public String generateAccessTokenWithClaims(String userEmail, List<String> roles) {
         return Jwts.builder()
-                .subject(username)
+                .subject(userEmail)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + accessExpiration))
                 .claim("roles", roles)
@@ -74,7 +74,7 @@ public class JwtService {
                 .getPayload();
     }
 
-    public String extractUsername(String token) {
+    public String extractEmail(String token) {
         return extractAllClaims(token, accessKey).getSubject();
     }
 
@@ -99,7 +99,7 @@ public class JwtService {
 
     public boolean validateToken(String token, UserDetails userDetails) {
         try {
-            return extractUsername(token).equals(userDetails.getUsername()) && !isTokenExpired(token);
+            return extractEmail(token).equals(userDetails.getUsername()) && !isTokenExpired(token);
         } catch (Exception e) {
             log.warn("Validate failed: {}", e.getMessage());
             return false;
@@ -121,8 +121,10 @@ public class JwtService {
         if (!validateRefreshToken(refreshToken)) {
             throw new RuntimeException("Invalid refresh token");
         } else {
-            String username = extractUsername(refreshToken);
-            return generateAccessToken(username);
+            String userEmail = extractEmail(refreshToken);
+            return generateAccessToken(userEmail);
         }
     }
+
+    
 }
