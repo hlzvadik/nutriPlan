@@ -35,11 +35,16 @@ public class JwtFilter extends OncePerRequestFilter {
         String userEmail = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String jwtToken = token.substring(7);
+            token = authHeader.substring(7);
             try {
-                userEmail =  jwtService.extractEmail(jwtToken);
+                userEmail =  jwtService.extractEmail(token);
             } catch (Exception e) {
                 log.warn("Invalid JWT token: {}", e.getMessage());
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"" + e.getMessage() + "\"}");
+                return;
             }
         }
 
