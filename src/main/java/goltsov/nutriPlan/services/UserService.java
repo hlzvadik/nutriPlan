@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,7 @@ public class UserService implements UserDetailsService {
         return userEntityToUser(userEntity, userRoleEntities);
     }
 
+    @Transactional(readOnly = true)
     public User getUserByEmail(String email) {
         UserEntity userEntity = userRepository.getByEmail(email);
         List<UserRoleEntity> userRoleEntities = userRoleRepository.findAllByUserId(userEntity.getId());
@@ -133,6 +135,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return getUserByEmail(username);
     }

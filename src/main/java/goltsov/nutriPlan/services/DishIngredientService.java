@@ -20,11 +20,11 @@ public class DishIngredientService {
         this.ingredientRepository = ingredientRepository;
     }
 
-    public Map<Ingredient, Long> getIngredientsOfDishById(Long dishId) {
+    public Map<Ingredient, Integer> getIngredientsOfDishById(Long dishId) {
         List<DishIngredientEntity> ingredients = dishIngredientRepository.findAllByDishId(dishId);
-        Map<Ingredient, Long> ingredientWeightMap = new HashMap<>();
+        Map<Ingredient, Integer> ingredientWeightMap = new HashMap<>();
         for (int i = 0; i < ingredients.size(); ++i) {
-            Long weight = ingredients.get(i).getWeight();
+            Integer weight = ingredients.get(i).getWeight();
             IngredientEntity ingredientEntity = ingredientRepository.getById(ingredients.get(i).getId());
             Ingredient ingredient = new Ingredient(
                     ingredientEntity.getId(),
@@ -44,11 +44,11 @@ public class DishIngredientService {
         return ingredientWeightMap;
     }
 
-    public void addDish(Long dishId, Map<Ingredient, Long> ingredientWeightMap) {
+    public void addDish(Long dishId, Map<Ingredient, Integer> ingredientWeightMap) {
         if (!dishIngredientRepository.findAllByDishId(dishId).isEmpty()) {
             throw new IllegalArgumentException("Dish allready in table");
         }
-        for (Map.Entry<Ingredient, Long> i : ingredientWeightMap.entrySet()) {
+        for (Map.Entry<Ingredient, Integer> i : ingredientWeightMap.entrySet()) {
             dishIngredientRepository.save(new DishIngredientEntity(dishId, i.getKey().getId(), i.getValue()));
         }
     }
@@ -59,10 +59,10 @@ public class DishIngredientService {
         }
     }
 
-    public void addIngredientWeightByDishIdIngredientIdWeight(Long dishId, Long ingredientId, Long weight) {
+    public void addIngredientWeightByDishIdIngredientIdWeight(Long dishId, Long ingredientId, Integer weight) {
         List<DishIngredientEntity> dishIngredientEntities = dishIngredientRepository.findAllByDishIdAndIngredientId(dishId, ingredientId);
         if (!dishIngredientEntities.isEmpty()) {
-            Long newWeight = dishIngredientEntities.getFirst().getWeight() + weight;
+            Integer newWeight = dishIngredientEntities.getFirst().getWeight() + weight;
             dishIngredientEntities.getFirst().setWeight(newWeight);
             dishIngredientRepository.save(dishIngredientEntities.getFirst());
         } else {
@@ -71,7 +71,7 @@ public class DishIngredientService {
         }
     }
 
-    public void reduceIngredientWeightByDishIdIngredientIdWeight(Long dishId, Long ingredientId, Long weight) {
+    public void reduceIngredientWeightByDishIdIngredientIdWeight(Long dishId, Long ingredientId, Integer weight) {
         List<DishIngredientEntity> dishIngredientEntities = dishIngredientRepository.findAllByDishIdAndIngredientId(dishId, ingredientId);
         if (dishIngredientEntities.isEmpty()) {
             throw new EntityNotFoundException("Not found entity with dishId="+dishId+", ingredientId="+ingredientId);
@@ -81,7 +81,7 @@ public class DishIngredientService {
         } else if (dishIngredientEntities.getFirst().getWeight() > weight) {
             throw new IllegalArgumentException("Weight should not be greater than " + dishIngredientEntities.getFirst().getWeight());
         } else {
-            Long newWeight = dishIngredientEntities.getFirst().getWeight() - weight;
+            Integer newWeight = dishIngredientEntities.getFirst().getWeight() - weight;
             dishIngredientRepository.save(new DishIngredientEntity(dishId, ingredientId, newWeight));
         }
     }

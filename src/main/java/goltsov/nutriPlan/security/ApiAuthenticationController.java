@@ -40,7 +40,7 @@ public class ApiAuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> postRegister(@RequestBody RegisterRequest request) {
-        User newUser = userService.createUser(new User(null, request.name(), request.password(), request.email(), request.age(), request.createdAt(), request.roles()));
+        User newUser = userService.createUser(new User(null, request.name(), request.email(), request.password(), request.age(), request.createdAt(), request.roles()));
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.email(), request.password()));
         String refreshToken = jwtService.generateRefreshToken(authentication.getName());
         String accessToken = jwtService.generateAccessToken(authentication.getName());

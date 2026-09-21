@@ -14,16 +14,16 @@ public class DishIngredientEntity {
     @Column(name = "ingredient_id")
     private Long ingredientId;
     @Column(name = "weight_of_ingredient")
-    private Long weight;
+    private Integer weight;
 
-    public DishIngredientEntity(Long id, Long dishId, Long ingredientId, Long weight) {
+    public DishIngredientEntity(Long id, Long dishId, Long ingredientId, Integer weight) {
         this.id = id;
         this.dishId = dishId;
         this.ingredientId = ingredientId;
         this.weight = weight;
     }
 
-    public DishIngredientEntity(Long dishId, Long ingredientId, Long weight) {
+    public DishIngredientEntity(Long dishId, Long ingredientId, Integer weight) {
         this.dishId = dishId;
         this.ingredientId = ingredientId;
         this.weight = weight;
@@ -57,11 +57,11 @@ public class DishIngredientEntity {
         this.ingredientId = ingredientId;
     }
 
-    public Long getWeight() {
+    public Integer getWeight() {
         return weight;
     }
 
-    public void setWeight(Long weight) {
+    public void setWeight(Integer weight) {
         this.weight = weight;
     }
 }

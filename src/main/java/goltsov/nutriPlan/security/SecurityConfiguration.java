@@ -24,11 +24,13 @@ public class SecurityConfiguration {
 
     private final JwtFilter jwtFilter;
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
 
-    public SecurityConfiguration(JwtFilter jwtFilter, UserService userService) {
+    public SecurityConfiguration(JwtFilter jwtFilter, UserService userService, PasswordEncoder passwordEncoder) {
         this.jwtFilter = jwtFilter;
         this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Bean
@@ -47,8 +49,10 @@ public class SecurityConfiguration {
     @Order(2)
     public SecurityFilterChain webFilterChain(HttpSecurity http) {
         http
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/**", "/public/**").permitAll().anyRequest().authenticated())
-                .formLogin(form -> form.loginPage("/auth/login").defaultSuccessUrl("/profile", true).permitAll()).logout(logout -> logout.logoutSuccessUrl("/auth/login?logout").permitAll());
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/**", "/public/**", "/error").permitAll().anyRequest().authenticated())
+                .formLogin(form -> form
+                        //.loginPage("/auth/login")
+                        .defaultSuccessUrl("/user/profile", true).permitAll()).logout(logout -> logout.logoutSuccessUrl("/auth/login?logout").permitAll());
         return http.build();
     }
 
@@ -60,13 +64,8 @@ public class SecurityConfiguration {
     @Bean
     public AuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userService);
-        provider.setPasswordEncoder(passwordEncoder());
+        provider.setPasswordEncoder(passwordEncoder);
         return provider;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
 }
