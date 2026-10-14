@@ -1,6 +1,6 @@
 package goltsov.nutriPlan.security;
 
-import goltsov.nutriPlan.baseclasses.User;
+import goltsov.nutriPlan.entities.User;
 import goltsov.nutriPlan.dto.AuthenticationResponse;
 import goltsov.nutriPlan.dto.LoginRequest;
 import goltsov.nutriPlan.dto.RegisterRequest;
@@ -10,10 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -45,5 +42,20 @@ public class ApiAuthenticationController {
         String refreshToken = jwtService.generateRefreshToken(authentication.getName());
         String accessToken = jwtService.generateAccessToken(authentication.getName());
         return ResponseEntity.status(200).body(new AuthenticationResponse(accessToken, refreshToken));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthenticationResponse> postRefreshToken(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).build();
+        }
+        String refreshToken = authHeader.substring(7);
+        String userEmail = jwtService.extractEmail(refreshToken);
+
+        if (userEmail != null && jwtService.validateRefreshToken(refreshToken)) {
+            String newAccessToken = jwtService.generateAccessToken(userEmail);
+            return ResponseEntity.ok(new AuthenticationResponse(newAccessToken, refreshToken));
+        }
+        return ResponseEntity.status(401).build();
     }
 }

@@ -1,7 +1,7 @@
 package goltsov.nutriPlan.services;
 
-import goltsov.nutriPlan.baseclasses.Role;
-import goltsov.nutriPlan.baseclasses.User;
+import goltsov.nutriPlan.entities.RoleName;
+import goltsov.nutriPlan.entities.User;
 import goltsov.nutriPlan.dto.UserDto;
 import goltsov.nutriPlan.entities.UserEntity;
 import goltsov.nutriPlan.entities.UserRoleEntity;
@@ -83,7 +83,7 @@ public class UserService implements UserDetailsService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         UserEntity userEntity = userToUserEntity(user);
         var savedUserEntity = userRepository.save(userEntity);
-        for (Role role: user.getRoles()) {
+        for (RoleName role: user.getRoles()) {
             userRoleService.add(userEntity.getId(), roleRepository.getRoleEntityByRole(role).getId());
         }
         var savedUserRoleEntities = userRoleRepository.findAllByUserId(userEntity.getId());

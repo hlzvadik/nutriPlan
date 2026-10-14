@@ -1,6 +1,6 @@
 package goltsov.nutriPlan.services;
 
-import goltsov.nutriPlan.baseclasses.Role;
+import goltsov.nutriPlan.entities.RoleName;
 import goltsov.nutriPlan.entities.UserRoleEntity;
 import goltsov.nutriPlan.repositories.RoleRepository;
 import goltsov.nutriPlan.repositories.UserRoleRepository;
@@ -30,8 +30,8 @@ public class UserRoleService {
         }
     }
 
-    public List<UserRoleEntity> addUser(Long userId, List<Role> roles) {
-        for (Role role: roles) {
+    public List<UserRoleEntity> addUser(Long userId, List<RoleName> roles) {
+        for (RoleName role: roles) {
             Long roleId = roleRepository.getRoleEntityByRole(role).getId();
             if (userRoleRepository.findAllByUserIdAndRoleId(userId, roleId).isEmpty()) {
                 userRoleRepository.save(new UserRoleEntity(userId, roleId));

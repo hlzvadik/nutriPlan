@@ -1,8 +1,8 @@
 package goltsov.nutriPlan.repositories;
 
-import goltsov.nutriPlan.entities.UserEntity;
+import goltsov.nutriPlan.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<UserEntity, Long> {
-    public UserEntity getByEmail(String email);
+public interface UserRepository extends JpaRepository<User, Long> {
+    public User getByEmail(String email);
 }

@@ -1,6 +1,6 @@
 package goltsov.nutriPlan.services;
 
-import goltsov.nutriPlan.baseclasses.Eating;
+import goltsov.nutriPlan.entities.Eating;
 import goltsov.nutriPlan.entities.UserDishEntity;
 import goltsov.nutriPlan.repositories.UserDishRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 public class UserDishService {

@@ -1,7 +1,7 @@
 package goltsov.nutriPlan.datainitializer;
 
-import goltsov.nutriPlan.baseclasses.Role;
-import goltsov.nutriPlan.entities.RoleEntity;
+import goltsov.nutriPlan.entities.Role;
+import goltsov.nutriPlan.entities.RoleName;
 import goltsov.nutriPlan.repositories.RoleRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -17,11 +17,11 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (roleRepository.getRoleEntityByRole(Role.USER) == null) {
-            roleRepository.save(new RoleEntity(Role.USER));
+        if (roleRepository.getRoleByRoleName(RoleName.ROLE_USER) == null) {
+            roleRepository.save(new Role(RoleName.ROLE_USER));
         }
-        if (roleRepository.getRoleEntityByRole(Role.ADMIN) == null) {
-            roleRepository.save(new RoleEntity(Role.ADMIN));
+        if (roleRepository.getRoleByRoleName(RoleName.ROLE_ADMIN) == null) {
+            roleRepository.save(new Role(RoleName.ROLE_ADMIN));
         }
     }
 }

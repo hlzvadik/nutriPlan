@@ -1,6 +1,6 @@
 package goltsov.nutriPlan.services;
 
-import goltsov.nutriPlan.baseclasses.Ingredient;
+import goltsov.nutriPlan.entities.Ingredient;
 import goltsov.nutriPlan.entities.IngredientEntity;
 import goltsov.nutriPlan.repositories.IngredientRepository;
 import jakarta.persistence.EntityNotFoundException;

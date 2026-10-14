@@ -1,6 +1,6 @@
 package goltsov.nutriPlan.dto;
 
-import goltsov.nutriPlan.baseclasses.Role;
+import goltsov.nutriPlan.entities.RoleName;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,6 +11,6 @@ public record RegisterRequest (
         String password,
         Integer age,
         LocalDateTime createdAt,
-        List<Role> roles
+        List<RoleName> roles
 ) {
 }
