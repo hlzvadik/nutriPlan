@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,12 +30,16 @@ public class Meal {
     private Eating eating;
 
     @Column(name = "portion_share", nullable = false)
-    Double portionShare;
+    private Double portionShare;
 
-    public Meal(User user, Dish dish, Eating eating, Double portionShare) {
+    @Column(name = "time", nullable = false)
+    private LocalDateTime time;
+
+    public Meal(User user, Dish dish, Eating eating, Double portionShare, LocalDateTime time) {
         this.user = user;
         this.dish = dish;
         this.eating = eating;
         this.portionShare = portionShare;
+        this.time = time;
     }
 }

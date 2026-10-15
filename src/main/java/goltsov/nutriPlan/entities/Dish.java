@@ -21,13 +21,13 @@ public class Dish {
     @Column(nullable = false)
     private String name;
     @Column(nullable = false)
-    private int kcal;
+    private Double kcal;
     @Column(nullable = false)
-    private int protein;
+    private Double protein;
     @Column(nullable = false)
-    private int carbohydrates;
+    private Double carbohydrates;
     @Column(nullable = false)
-    private int fats;
+    private Double fats;
     @Column(nullable = false)
     private int rawWeight;
     @ElementCollection(fetch = FetchType.LAZY)
@@ -37,7 +37,7 @@ public class Dish {
     private Map<Ingredient, Integer> ingredientWeightMap = new HashMap<>();
 
 
-    public Dish(String name, int kcal, int protein, int carbohydrates, int fats, int rawWeight, Map<Ingredient, Integer> ingredientWeightMap) {
+    public Dish(String name, Double kcal, Double protein, Double carbohydrates, Double fats, int rawWeight, Map<Ingredient, Integer> ingredientWeightMap) {
         this.name = name;
         this.kcal = kcal;
         this.protein = protein;
@@ -47,7 +47,7 @@ public class Dish {
         this.ingredientWeightMap = new HashMap<>(ingredientWeightMap);
     }
 
-    public Dish(String name, int kcal, int protein, int carbohydrates, int fats, int rawWeight) {
+    public Dish(String name, Double kcal, Double protein, Double carbohydrates, Double fats, int rawWeight) {
         this.name = name;
         this.kcal = kcal;
         this.protein = protein;
@@ -57,10 +57,10 @@ public class Dish {
     }
 
     public void addIngredient(Ingredient ingredient, int weight) {
-        int ingredientKcal = (weight * ingredient.getKcal()) / ingredient.getWeight();
-        int ingredientProtein = (weight * ingredient.getProtein()) / ingredient.getWeight();
-        int ingredientCarbohydrates = (weight * ingredient.getCarbohydrates()) / ingredient.getWeight();
-        int ingredientFats = (weight * ingredient.getFats()) / ingredient.getWeight();
+        double ingredientKcal = (weight * ingredient.getKcal()) / ingredient.getWeight();
+        double ingredientProtein = (weight * ingredient.getProtein()) / ingredient.getWeight();
+        double ingredientCarbohydrates = (weight * ingredient.getCarbohydrates()) / ingredient.getWeight();
+        double ingredientFats = (weight * ingredient.getFats()) / ingredient.getWeight();
         
         if (ingredientWeightMap.containsKey(ingredient)) {
             ingredientWeightMap.put(ingredient, ingredientWeightMap.get(ingredient) + weight);
@@ -84,10 +84,10 @@ public class Dish {
             throw new IllegalArgumentException("Weight must be less than in the dish");
         }
 
-        int ingredientKcal = (weight * ingredient.getKcal()) / ingredient.getWeight();
-        int ingredientProtein = (weight * ingredient.getProtein()) / ingredient.getWeight();
-        int ingredientCarbohydrates = (weight * ingredient.getCarbohydrates()) / ingredient.getWeight();
-        int ingredientFats = (weight * ingredient.getFats()) / ingredient.getWeight();
+        double ingredientKcal = (weight * ingredient.getKcal()) / ingredient.getWeight();
+        double ingredientProtein = (weight * ingredient.getProtein()) / ingredient.getWeight();
+        double ingredientCarbohydrates = (weight * ingredient.getCarbohydrates()) / ingredient.getWeight();
+        double ingredientFats = (weight * ingredient.getFats()) / ingredient.getWeight();
 
         if (weight == ingredientWeightMap.get(ingredient)) {
             ingredientWeightMap.remove(ingredient);
@@ -108,10 +108,10 @@ public class Dish {
         }
         int weight = ingredientWeightMap.get(ingredient);
 
-        int ingredientKcal = (weight  * ingredient.getKcal()) / ingredient.getWeight();
-        int ingredientProtein = (weight * ingredient.getProtein()) / ingredient.getWeight();
-        int ingredientCarbohydrates = (weight * ingredient.getCarbohydrates()) / ingredient.getWeight();
-        int ingredientFats = (weight * ingredient.getFats()) / ingredient.getWeight();
+        double ingredientKcal = (weight  * ingredient.getKcal()) / ingredient.getWeight();
+        double ingredientProtein = (weight * ingredient.getProtein()) / ingredient.getWeight();
+        double ingredientCarbohydrates = (weight * ingredient.getCarbohydrates()) / ingredient.getWeight();
+        double ingredientFats = (weight * ingredient.getFats()) / ingredient.getWeight();
 
         ingredientWeightMap.remove(ingredient);
 

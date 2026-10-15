@@ -42,8 +42,13 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Meal> meals = new ArrayList<>();
 
-    public User(Long id, String name, String email, String password, Integer age, LocalDateTime createdAt, Set<Role> roles, List<Meal> meals) {
-        this.id = id;
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "inventory", joinColumns = @JoinColumn(name = "user_id"))
+    @MapKeyJoinColumn(name = "ingredient_id")
+    @Column(name = "weight", nullable = false)
+    private Map<Ingredient, Integer> inventory = new HashMap<>();
+
+    public User(String name, String email, String password, Integer age, LocalDateTime createdAt, Set<Role> roles, List<Meal> meals, Map<Ingredient, Integer> inventory) {
         this.name = name;
         this.email = email;
         this.password = password;
@@ -51,6 +56,26 @@ public class User implements UserDetails {
         this.createdAt = createdAt;
         this.roles = roles;
         this.meals = meals;
+        this.inventory = inventory;
+    }
+
+    public User(String name, String email, String password, Integer age, LocalDateTime createdAt, Set<Role> roles, List<Meal> meals) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.age = age;
+        this.createdAt = createdAt;
+        this.roles = roles;
+        this.meals = meals;
+    }
+
+    public User(String name, String email, String password, Integer age, LocalDateTime createdAt, Set<Role> roles) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.age = age;
+        this.createdAt = createdAt;
+        this.roles = roles;
     }
 
     @Override
@@ -67,8 +92,8 @@ public class User implements UserDetails {
         return getEmail();
     }
 
-    public void addDish(Dish dish, Eating eating, double portionShare) {
-        Meal meal = new Meal(this, dish, eating, portionShare);
+    public void addDish(Dish dish, Eating eating, double portionShare, LocalDateTime time) {
+        Meal meal = new Meal(this, dish, eating, portionShare, time);
         this.meals.add(meal);
     }
 

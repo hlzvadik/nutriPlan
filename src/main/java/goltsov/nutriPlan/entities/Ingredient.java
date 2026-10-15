@@ -16,20 +16,20 @@ public class Ingredient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     private String name;
     @Column(nullable = false)
-    private Integer kcal;
+    private Double kcal;
     @Column(nullable = false)
-    private Integer protein;
+    private Double protein;
     @Column(nullable = false)
-    private Integer carbohydrates;
+    private Double carbohydrates;
     @Column(nullable = false)
-    private Integer fats;
+    private Double fats;
     @Column(nullable = false)
     private Integer weight = 100;
 
-    public Ingredient(String name, Integer kcal, Integer protein, Integer carbohydrates, Integer fats) {
+    public Ingredient(String name, Double kcal, Double protein, Double carbohydrates, Double fats) {
         this.name = name;
         this.kcal = kcal;
         this.protein = protein;
@@ -37,7 +37,7 @@ public class Ingredient {
         this.fats = fats;
     }
 
-    public Ingredient(String name, Integer kcal, Integer protein, Integer carbohydrates, Integer fats, Integer weight) {
+    public Ingredient(String name, Double kcal, Double protein, Double carbohydrates, Double fats, Integer weight) {
         this.name = name;
         this.kcal = kcal;
         this.protein = protein;

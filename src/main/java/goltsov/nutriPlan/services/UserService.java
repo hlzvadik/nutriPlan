@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -88,13 +89,36 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 
-    public User addMealById(Long id, Dish dish, Eating eating, Double portionShare) {
+    public User addMealById(Long id, Dish dish, Eating eating, Double portionShare, LocalDateTime time) {
         User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No user with id="+id));
-        user.addDish(dish, eating, portionShare);
+        user.addDish(dish, eating, portionShare, time);
         return userRepository.save(user);
     }
 
+    public User addIngredientToInventoryById(Long id, Ingredient ingredient, Integer weight) {
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No user with id="+id));
+        if (user.getInventory().containsKey(ingredient)) {
+            user.getInventory().put(ingredient, user.getInventory().get(ingredient) + weight);
+        } else {
+            user.getInventory().put(ingredient, weight);
+        }
+        return userRepository.save(user);
+    }
 
+    public User reduceIngredientToInventoryById(Long id, Ingredient ingredient, Integer weight) {
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No user with id="+id));
+        if (user.getInventory().containsKey(ingredient)) {
+            throw new IllegalArgumentException("No such ingredient: "+ingredient.getName());
+        }
+        if (user.getInventory().get(ingredient) < weight) {
+            throw new IllegalArgumentException("Weight must be lower than "+user.getInventory().get(ingredient));
+        } else if (user.getInventory().get(ingredient).equals(weight)) {
+            user.getInventory().remove(ingredient);
+        } else {
+            user.getInventory().put(ingredient, user.getInventory().get(ingredient) - weight);
+        }
+        return userRepository.save(user);
+    }
 
     @Override
     @Transactional(readOnly = true)
