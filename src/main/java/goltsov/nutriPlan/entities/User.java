@@ -71,4 +71,18 @@ public class User implements UserDetails {
         Meal meal = new Meal(this, dish, eating, portionShare);
         this.meals.add(meal);
     }
+
+    public void addRole(Role role) {
+        if (this.roles.contains(role)) {
+            throw new IllegalArgumentException("Role "+role.getRoleName()+" already exists for user "+getUsername());
+        }
+        this.roles.add(role);
+    }
+
+    public void removeRole(Role role) {
+        if (!this.roles.contains(role)) {
+            throw new IllegalArgumentException("Role "+role.getRoleName()+" no for user "+getUsername());
+        }
+        this.roles.remove(role);
+    }
 }

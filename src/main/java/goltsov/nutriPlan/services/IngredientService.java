@@ -1,7 +1,6 @@
 package goltsov.nutriPlan.services;
 
 import goltsov.nutriPlan.entities.Ingredient;
-import goltsov.nutriPlan.entities.IngredientEntity;
 import goltsov.nutriPlan.repositories.IngredientRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -16,33 +15,22 @@ public class IngredientService {
         this.ingredientRepository = ingredientRepository;
     }
 
-    public Ingredient getIngredientById(Long ingredientId) {
-        IngredientEntity ingredientEntity = ingredientRepository.getById(ingredientId);
-        return ingredientEntityToIngredient(ingredientEntity);
+    public Ingredient getIngredientById(Long id) {
+        return ingredientRepository.getReferenceById(id);
     }
 
     public List<Ingredient> getAllIngredients() {
-        List<IngredientEntity> allIngredientEntities = ingredientRepository.findAll();
-        return allIngredientEntities.stream().map(
-                ingredientEntity -> ingredientEntityToIngredient(ingredientEntity)
-        ).toList();
+        return ingredientRepository.findAll();
     }
 
     public Ingredient createIngredient(Ingredient ingredient) {
-        if (ingredient.getName() == null) {
-            throw new IllegalArgumentException("Name must be not null");
-        }
-        IngredientEntity ingredientEntity = ingredientToIngredientEntity(ingredient);
-        var savedIngredientEntity = ingredientRepository.save(ingredientEntity);
-        return ingredientEntityToIngredient(savedIngredientEntity);
+        return ingredientRepository.save(ingredient);
     }
 
     public Ingredient updateIngredient(Long id, Ingredient ingredient) {
-        IngredientEntity oldIngredientEntity = ingredientRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found by id="+id));
-        IngredientEntity newIngredientEntity = ingredientToIngredientEntity(ingredient);
-        newIngredientEntity.setId(id);
-        ingredientRepository.save(newIngredientEntity);
-        return ingredientEntityToIngredient(newIngredientEntity);
+        Ingredient oldIngredient = ingredientRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found by id="+id));
+        ingredient.setId(id);
+        return ingredientRepository.save(ingredient);
     }
 
     public void deleteIngredientById(Long id) {
@@ -50,30 +38,5 @@ public class IngredientService {
             throw new EntityNotFoundException("Not found by id="+id);
         }
         ingredientRepository.deleteById(id);
-    }
-
-
-    private Ingredient ingredientEntityToIngredient(IngredientEntity ingredientEntity) {
-        return new Ingredient(
-                ingredientEntity.getId(),
-                ingredientEntity.getName(),
-                ingredientEntity.getKcal(),
-                ingredientEntity.getProtein(),
-                ingredientEntity.getCarbohydrates(),
-                ingredientEntity.getFats(),
-                ingredientEntity.getWeight()
-        );
-    }
-
-    private IngredientEntity ingredientToIngredientEntity(Ingredient ingredient) {
-        return new IngredientEntity(
-                ingredient.getId(),
-                ingredient.getName(),
-                ingredient.getKcal(),
-                ingredient.getProtein(),
-                ingredient.getCarbohydrates(),
-                ingredient.getFats(),
-                ingredient.getWeight()
-        );
     }
 }

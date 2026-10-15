@@ -1,50 +1,38 @@
 package goltsov.nutriPlan.services;
 
 import goltsov.nutriPlan.entities.Dish;
-import goltsov.nutriPlan.entities.DishEntity;
+import goltsov.nutriPlan.entities.Ingredient;
 import goltsov.nutriPlan.repositories.DishRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class DishService {
     private final DishRepository dishRepository;
-    private final DishIngredientService dishIngredientService;
 
-    public DishService(DishRepository dishRepository, DishIngredientService dishIngredientService) {
+    public DishService(DishRepository dishRepository) {
         this.dishRepository = dishRepository;
-        this.dishIngredientService = dishIngredientService;
     }
 
     public Dish getDishById(Long dishId) {
-        DishEntity dishEntity = dishRepository.getById(dishId);
-        return dishEntityToDish(dishEntity);
+        return dishRepository.getDishById(dishId);
     }
 
     public List<Dish> getAllDishes() {
-        List<DishEntity> allDishEntities = dishRepository.findAll();
-        return allDishEntities.stream().map(
-                dishEntity -> dishEntityToDish(dishEntity)
-        ).toList();
+        return dishRepository.findAll();
     }
 
     public Dish createDish(Dish dish) {
-        if (dish.getName() == null) {
-            throw new IllegalArgumentException("Name must be not null");
-        }
-        DishEntity dishEntity = dishToDishEntity(dish);
-        var savedDishEntity = dishRepository.save(dishEntity);
-        return dishEntityToDish(savedDishEntity);
+        return dishRepository.save(dish);
     }
 
     public Dish updateDish(Long id, Dish dish) {
-        DishEntity oldDishEntity = dishRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found by id="+id));
-        DishEntity newDishEntity = dishToDishEntity(dish);
-        newDishEntity.setId(id);
-        dishRepository.save(newDishEntity);
-        return dishEntityToDish(newDishEntity);
+        Dish oldDish = dishRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found by id="+id));
+        dish.setId(id);
+        return dishRepository.save(dish);
     }
 
     public void deleteDishById(Long id) {
@@ -54,29 +42,31 @@ public class DishService {
         dishRepository.deleteById(id);
     }
 
-
-    private Dish dishEntityToDish(DishEntity dishEntity) {
-        return new Dish(
-                dishEntity.getId(),
-                dishEntity.getName(),
-                dishEntity.getKcal(),
-                dishEntity.getProtein(),
-                dishEntity.getCarbohydrates(),
-                dishEntity.getFats(),
-                dishEntity.getRawWeight(),
-                dishIngredientService.getIngredientsOfDishById(dishEntity.getId())
-        );
+    public Map<Ingredient, Integer> getIngredientsOfDishById(Long id) {
+        Dish dish = dishRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found by id="+id));
+        return dish.getIngredientWeightMap();
     }
 
-    private DishEntity dishToDishEntity(Dish dish) {
-        return new DishEntity(
-                dish.getId(),
-                dish.getName(),
-                dish.getKcal(),
-                dish.getProtein(),
-                dish.getCarbohydrates(),
-                dish.getFats(),
-                dish.getRawWeight()
-        );
+    public void addIngredientsToDishById(Long id, Map<Ingredient, Integer> ingredientWeightMap) {
+        Dish dish = dishRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found by id="+id));
+        ingredientWeightMap.forEach(dish::addIngredient);
+        dishRepository.save(dish);
+    }
+
+    public void addIngredientWeightToDishById(Long id, Ingredient ingredient, Integer weight) {
+        Dish dish = dishRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found by id="+id));
+        dish.addIngredient(ingredient, weight);
+        dishRepository.save(dish);
+    }
+
+    public void reduceIngredientWeightToDishById(Long id, Ingredient ingredient, Integer weight) {
+        Dish dish = dishRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found by id="+id));
+        dish.reduceIngredient(ingredient, weight);
+        dishRepository.save(dish);
+    }
+
+    public void deleteIngredientById(Long id, Ingredient ingredient) {
+        Dish dish = dishRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found by id="+id));
+        dish.removeIngredient(ingredient);
     }
 }

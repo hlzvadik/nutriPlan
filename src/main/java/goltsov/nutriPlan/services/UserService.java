@@ -1,14 +1,12 @@
 package goltsov.nutriPlan.services;
 
-import goltsov.nutriPlan.entities.RoleName;
-import goltsov.nutriPlan.entities.User;
+import goltsov.nutriPlan.entities.*;
 import goltsov.nutriPlan.dto.UserDto;
-import goltsov.nutriPlan.entities.UserEntity;
-import goltsov.nutriPlan.entities.UserRoleEntity;
 import goltsov.nutriPlan.repositories.RoleRepository;
 import goltsov.nutriPlan.repositories.UserRepository;
-import goltsov.nutriPlan.repositories.UserRoleRepository;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -16,90 +14,59 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
-    private final UserRoleRepository userRoleRepository;
-    private final UserRoleService userRoleService;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, UserRoleRepository userRoleRepository, UserRoleService userRoleService, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.userRoleRepository = userRoleRepository;
-        this.userRoleService = userRoleService;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User getUserById(Long userId) {
-        UserEntity userEntity = userRepository.getById(userId);
-        List<UserRoleEntity> userRoleEntities = userRoleRepository.findAllByUserId(userId);
-        return userEntityToUser(userEntity, userRoleEntities);
+    @Transactional(readOnly = true)
+    public User getUserById(Long id) {
+        return userRepository.getReferenceById(id);
     }
 
     @Transactional(readOnly = true)
-    public User getUserByEmail(String email) {
-        UserEntity userEntity = userRepository.getByEmail(email);
-        List<UserRoleEntity> userRoleEntities = userRoleRepository.findAllByUserId(userEntity.getId());
-        return userEntityToUser(userEntity, userRoleEntities);
+    public User getUserByEmail(@NonNull String email) {
+        return userRepository.getByEmail(email);
     }
 
     public UserDto getUserDtoByEmail(String email) {
-        UserEntity userEntity = userRepository.getByEmail(email);
-        List<UserRoleEntity> userRoleEntities = userRoleRepository.findAllByUserId(userEntity.getId());
-        User res = userEntityToUser(userEntity, userRoleEntities);
+        User user = getUserByEmail(email);
+        Set<RoleName> roleNames = new HashSet<>();
+        for (Role role: user.getRoles()) {
+            roleNames.add(role.getRoleName());
+        }
         return new UserDto(
-                res.getId(),
-                res.getName(),
-                res.getEmail(),
-                res.getAge(),
-                res.getRoles()
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getAge(),
+                roleNames
         );
     }
 
+    @Transactional(readOnly = true)
     public List<User> getAllUsers() {
-        List<UserEntity> allUserEntities = userRepository.findAll();
-        Map<Long, List<UserRoleEntity>> allUserRoleEntities = new HashMap<>();
-        for (UserEntity userEntity: allUserEntities) {
-            allUserRoleEntities.put(userEntity.getId(), userRoleRepository.findAllByUserId(userEntity.getId()));
-        }
-        return allUserEntities.stream().map(
-            userEntity -> userEntityToUser(userEntity, allUserRoleEntities.get(userEntity.getId()))
-        ).toList();
+        return userRepository.findAll();
     }
 
     public User createUser(User user) {
-        if (user.getEmail() == null) {
-            throw new IllegalArgumentException("Email must be not null");
-        }
-        if (user.getPassword() == null) {
-            throw new IllegalArgumentException("Password must be not null");
-        }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        UserEntity userEntity = userToUserEntity(user);
-        var savedUserEntity = userRepository.save(userEntity);
-        for (RoleName role: user.getRoles()) {
-            userRoleService.add(userEntity.getId(), roleRepository.getRoleEntityByRole(role).getId());
-        }
-        var savedUserRoleEntities = userRoleRepository.findAllByUserId(userEntity.getId());
-        return userEntityToUser(savedUserEntity, savedUserRoleEntities);
+        return userRepository.save(user);
     }
 
     public User updateUser(Long id, User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        UserEntity oldUserEntity = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found by id="+id));
-        userRepository.delete(oldUserEntity);
-        UserEntity newUserEntity = userToUserEntity(user);
-        newUserEntity.setId(id);
-        userRepository.save(newUserEntity);
-        userRoleService.deleteUser(id);
-        userRoleService.addUser(user.getId(), user.getRoles());
-        return userEntityToUser(newUserEntity, userRoleRepository.findAllByUserId(user.getId()));
+        User oldUser = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found by id="+id));
+        return userRepository.save(user);
     }
 
     public void deleteUserById(Long id) {
@@ -107,36 +74,31 @@ public class UserService implements UserDetailsService {
             throw new EntityNotFoundException("Not found by id="+id);
         }
         userRepository.deleteById(id);
-        userRoleService.deleteUser(id);
+    }
+
+    public User addRoleById(Long id, Role role) {
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No user with id="+id));
+        user.addRole(role);
+        return userRepository.save(user);
+    }
+
+    public User removeRoleById(Long id, Role role) {
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No user with id="+id));
+        user.removeRole(role);
+        return userRepository.save(user);
+    }
+
+    public User addMealById(Long id, Dish dish, Eating eating, Double portionShare) {
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No user with id="+id));
+        user.addDish(dish, eating, portionShare);
+        return userRepository.save(user);
     }
 
 
-    private User userEntityToUser(UserEntity userEntity, List<UserRoleEntity> userRoleEntities) {
-        return new User(
-                userEntity.getId(),
-                userEntity.getName(),
-                userEntity.getEmail(),
-                userEntity.getPassword(),
-                userEntity.getAge(),
-                userEntity.getCreatedAt(),
-                userRoleEntities.stream().map(userRoleEntity -> roleRepository.getById(userRoleEntity.getRoleId()).getRole()).toList()
-        );
-    }
-
-    private UserEntity userToUserEntity(User user) {
-        return new UserEntity(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getPassword(),
-                user.getAge(),
-                user.getCreatedAt()
-        );
-    }
 
     @Override
     @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
         return getUserByEmail(username);
     }
 }
