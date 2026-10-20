@@ -48,6 +48,18 @@ public class User implements UserDetails {
     @Column(name = "weight", nullable = false)
     private Map<Ingredient, Integer> inventory = new HashMap<>();
 
+    public User(Long id, String name, String email, String password, Integer age, LocalDateTime createdAt, Set<Role> roles, List<Meal> meals, Map<Ingredient, Integer> inventory) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.age = age;
+        this.createdAt = createdAt;
+        this.roles = roles;
+        this.meals = meals;
+        this.inventory = inventory;
+    }
+
     public User(String name, String email, String password, Integer age, LocalDateTime createdAt, Set<Role> roles, List<Meal> meals, Map<Ingredient, Integer> inventory) {
         this.name = name;
         this.email = email;

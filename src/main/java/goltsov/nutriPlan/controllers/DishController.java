@@ -1,8 +1,10 @@
 package goltsov.nutriPlan.controllers;
 
 import goltsov.nutriPlan.dto.DishDto;
+import goltsov.nutriPlan.dto.MealDto;
 import goltsov.nutriPlan.entities.Dish;
 import goltsov.nutriPlan.entities.Ingredient;
+import goltsov.nutriPlan.entities.User;
 import goltsov.nutriPlan.services.DishService;
 import goltsov.nutriPlan.services.IngredientService;
 import goltsov.nutriPlan.services.MealService;
@@ -23,8 +25,6 @@ import java.util.Map;
 @RequestMapping("/dish")
 @Slf4j
 public class DishController {
-
-
     private final MealService mealService;
     private final UserService userService;
     private final DishService dishService;
@@ -63,40 +63,7 @@ public class DishController {
 
     @PostMapping
     public ResponseEntity<DishDto> newDish(@RequestBody DishDto dishDto) {
-        Dish savedDish = dishService.createDish(dishDtoToDish(dishDto));
-        return ResponseEntity.ok(dishToDishDto(savedDish));
-    }
-
-    private DishDto dishToDishDto(Dish dish) {
-        Map<String, Integer> ingredientWeightMap = new HashMap<>();
-        for (Map.Entry<Ingredient, Integer> entry: dish.getIngredientWeightMap().entrySet()) {
-            ingredientWeightMap.put(entry.getKey().getName(), entry.getValue());
-        }
-        return new DishDto(
-                dish.getId(),
-                dish.getName(),
-                dish.getKcal(),
-                dish.getProtein(),
-                dish.getCarbohydrates(),
-                dish.getFats(),
-                dish.getRawWeight(),
-                ingredientWeightMap
-        );
-    }
-
-    private Dish dishDtoToDish(DishDto dishDto) {
-        Map<Ingredient, Integer> ingredientWeightMap = new HashMap<>();
-        for (Map.Entry<String, Integer> entry: dishDto.ingredientWeightMap().entrySet()) {
-            ingredientWeightMap.put(ingredientService.getIngredientByName(entry.getKey()), entry.getValue());
-        }
-        return new Dish(
-                dishDto.name(),
-                dishDto.kcal(),
-                dishDto.protein(),
-                dishDto.carbohydrates(),
-                dishDto.fats(),
-                dishDto.rawWeight(),
-                ingredientWeightMap
-        );
+        Dish savedDish = dishService.createDish(dishService.dishDtoToDish(dishDto));
+        return ResponseEntity.ok(dishService.dishToDishDto(savedDish));
     }
 }

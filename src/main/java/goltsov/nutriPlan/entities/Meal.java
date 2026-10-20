@@ -42,4 +42,13 @@ public class Meal {
         this.portionShare = portionShare;
         this.time = time;
     }
+
+    public Meal(Long id, User user, Dish dish, Eating eating, Double portionShare, LocalDateTime time) {
+        this.id = id;
+        this.user = user;
+        this.dish = dish;
+        this.eating = eating;
+        this.portionShare = portionShare;
+        this.time = time;
+    }
 }

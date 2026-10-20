@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -118,6 +119,16 @@ public class UserService implements UserDetailsService {
             user.getInventory().put(ingredient, user.getInventory().get(ingredient) - weight);
         }
         return userRepository.save(user);
+    }
+
+    public UserDto userToUserDto(User user) {
+        return new UserDto(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getAge(),
+                user.getRoles().stream().map(Role::getRoleName).collect(Collectors.toSet())
+        );
     }
 
     @Override

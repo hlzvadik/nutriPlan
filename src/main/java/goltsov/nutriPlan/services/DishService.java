@@ -1,19 +1,24 @@
 package goltsov.nutriPlan.services;
 
+import goltsov.nutriPlan.dto.DishDto;
 import goltsov.nutriPlan.entities.Dish;
 import goltsov.nutriPlan.entities.Ingredient;
 import goltsov.nutriPlan.repositories.DishRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class DishService {
+    private final IngredientService ingredientService;
+
     private final DishRepository dishRepository;
 
-    public DishService(DishRepository dishRepository) {
+    public DishService(IngredientService ingredientService, DishRepository dishRepository) {
+        this.ingredientService = ingredientService;
         this.dishRepository = dishRepository;
     }
 
@@ -68,5 +73,38 @@ public class DishService {
     public void deleteIngredientById(Long id, Ingredient ingredient) {
         Dish dish = dishRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found by id="+id));
         dish.removeIngredient(ingredient);
+    }
+
+    public DishDto dishToDishDto(Dish dish) {
+        Map<String, Integer> ingredientWeightMap = new HashMap<>();
+        for (Map.Entry<Ingredient, Integer> entry: dish.getIngredientWeightMap().entrySet()) {
+            ingredientWeightMap.put(entry.getKey().getName(), entry.getValue());
+        }
+        return new DishDto(
+                dish.getId(),
+                dish.getName(),
+                dish.getKcal(),
+                dish.getProtein(),
+                dish.getCarbohydrates(),
+                dish.getFats(),
+                dish.getRawWeight(),
+                ingredientWeightMap
+        );
+    }
+
+    public Dish dishDtoToDish(DishDto dishDto) {
+        Map<Ingredient, Integer> ingredientWeightMap = new HashMap<>();
+        for (Map.Entry<String, Integer> entry: dishDto.ingredientWeightMap().entrySet()) {
+            ingredientWeightMap.put(ingredientService.getIngredientByName(entry.getKey()), entry.getValue());
+        }
+        return new Dish(
+                dishDto.name(),
+                dishDto.kcal(),
+                dishDto.protein(),
+                dishDto.carbohydrates(),
+                dishDto.fats(),
+                dishDto.rawWeight(),
+                ingredientWeightMap
+        );
     }
 }
