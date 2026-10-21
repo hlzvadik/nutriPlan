@@ -1,20 +1,22 @@
 package goltsov.nutriPlan.security;
 
-import goltsov.nutriPlan.entities.Role;
-import goltsov.nutriPlan.entities.RoleName;
-import goltsov.nutriPlan.entities.User;
 import goltsov.nutriPlan.dto.AuthenticationResponse;
 import goltsov.nutriPlan.dto.LoginRequest;
 import goltsov.nutriPlan.dto.RegisterRequest;
+import goltsov.nutriPlan.entities.Role;
+import goltsov.nutriPlan.entities.RoleName;
+import goltsov.nutriPlan.entities.User;
 import goltsov.nutriPlan.repositories.RoleRepository;
 import goltsov.nutriPlan.services.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -45,11 +47,22 @@ public class ApiAuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> postRegister(@RequestBody RegisterRequest request) {
-        Set<Role> roles = new HashSet<>();
-        for (RoleName roleName: request.roles()) {
-            roles.add(roleRepository.getRoleByRoleName(roleName));
+        if (request.email() == null || request.email().isBlank() || request.password() == null || request.password().isBlank()) {
+            return ResponseEntity.badRequest().build();
         }
-        User newUser = userService.createUser(new User(request.name(), request.email(), request.password(), request.age(), request.createdAt(), roles));
+        if (userService.getUserByEmail(request.email()) != null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+
+        // Roles from the request are intentionally ignored: otherwise anyone could register as ROLE_ADMIN.
+        Role userRole = roleRepository.getRoleByRoleName(RoleName.ROLE_USER);
+        if (userRole == null) {
+            throw new IllegalStateException("Role " + RoleName.ROLE_USER + " is not initialized");
+        }
+        Set<Role> roles = new HashSet<>();
+        roles.add(userRole);
+
+        userService.createUser(new User(request.name(), request.email(), request.password(), request.age(), LocalDateTime.now(), roles));
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.email(), request.password()));
         String refreshToken = jwtService.generateRefreshToken(authentication.getName());
         String accessToken = jwtService.generateAccessToken(authentication.getName());
@@ -62,12 +75,15 @@ public class ApiAuthenticationController {
             return ResponseEntity.status(401).build();
         }
         String refreshToken = authHeader.substring(7);
-        String userEmail = jwtService.extractEmail(refreshToken);
 
-        if (userEmail != null && jwtService.validateRefreshToken(refreshToken)) {
-            String newAccessToken = jwtService.generateAccessToken(userEmail);
-            return ResponseEntity.ok(new AuthenticationResponse(newAccessToken, refreshToken));
+        if (!jwtService.validateRefreshToken(refreshToken)) {
+            return ResponseEntity.status(401).build();
         }
-        return ResponseEntity.status(401).build();
+        String userEmail = jwtService.extractEmailFromRefreshToken(refreshToken);
+        if (userEmail == null || userService.getUserByEmail(userEmail) == null) {
+            return ResponseEntity.status(401).build();
+        }
+        String newAccessToken = jwtService.generateAccessToken(userEmail);
+        return ResponseEntity.ok(new AuthenticationResponse(newAccessToken, refreshToken));
     }
 }

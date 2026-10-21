@@ -23,13 +23,13 @@ public class Eating {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Eating eating = (Eating) o;
-        return eatingName == eating.eatingName;
+        if (this == o) return true;
+        if (!(o instanceof Eating eating)) return false;
+        return getEatingName() == eating.getEatingName();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(eatingName);
+        return Objects.hashCode(getEatingName());
     }
 }

@@ -32,7 +32,7 @@ public class UserService implements UserDetailsService {
 
     @Transactional(readOnly = true)
     public User getUserById(Long id) {
-        return userRepository.getReferenceById(id);
+        return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No user with id=" + id));
     }
 
     @Transactional(readOnly = true)
@@ -66,8 +66,9 @@ public class UserService implements UserDetailsService {
     }
 
     public User updateUser(Long id, User user) {
+        userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found by id="+id));
+        user.setId(id);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        User oldUser = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found by id="+id));
         return userRepository.save(user);
     }
 
@@ -108,7 +109,7 @@ public class UserService implements UserDetailsService {
 
     public User reduceIngredientToInventoryById(Long id, Ingredient ingredient, Integer weight) {
         User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No user with id="+id));
-        if (user.getInventory().containsKey(ingredient)) {
+        if (!user.getInventory().containsKey(ingredient)) {
             throw new IllegalArgumentException("No such ingredient: "+ingredient.getName());
         }
         if (user.getInventory().get(ingredient) < weight) {
@@ -134,6 +135,10 @@ public class UserService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
-        return getUserByEmail(username);
+        User user = getUserByEmail(username);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found: " + username);
+        }
+        return user;
     }
 }

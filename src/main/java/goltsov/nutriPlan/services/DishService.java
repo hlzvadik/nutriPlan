@@ -23,7 +23,7 @@ public class DishService {
     }
 
     public Dish getDishById(Long dishId) {
-        return dishRepository.getDishById(dishId);
+        return dishRepository.findById(dishId).orElseThrow(() -> new EntityNotFoundException("Not found by id=" + dishId));
     }
 
     public List<Dish> getAllDishes() {
@@ -73,6 +73,7 @@ public class DishService {
     public void deleteIngredientById(Long id, Ingredient ingredient) {
         Dish dish = dishRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found by id="+id));
         dish.removeIngredient(ingredient);
+        dishRepository.save(dish);
     }
 
     public DishDto dishToDishDto(Dish dish) {
@@ -95,7 +96,11 @@ public class DishService {
     public Dish dishDtoToDish(DishDto dishDto) {
         Map<Ingredient, Integer> ingredientWeightMap = new HashMap<>();
         for (Map.Entry<String, Integer> entry: dishDto.ingredientWeightMap().entrySet()) {
-            ingredientWeightMap.put(ingredientService.getIngredientByName(entry.getKey()), entry.getValue());
+            Ingredient ingredient = ingredientService.getIngredientByName(entry.getKey());
+            if (ingredient == null) {
+                throw new EntityNotFoundException("No ingredient with name=" + entry.getKey());
+            }
+            ingredientWeightMap.put(ingredient, entry.getValue());
         }
         return new Dish(
                 dishDto.name(),

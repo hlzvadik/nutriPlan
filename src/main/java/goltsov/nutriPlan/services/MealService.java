@@ -2,6 +2,7 @@ package goltsov.nutriPlan.services;
 
 import goltsov.nutriPlan.dto.MealDto;
 import goltsov.nutriPlan.entities.Dish;
+import goltsov.nutriPlan.entities.Eating;
 import goltsov.nutriPlan.entities.Meal;
 import goltsov.nutriPlan.entities.Role;
 import goltsov.nutriPlan.entities.User;
@@ -51,6 +52,7 @@ public class MealService {
             throw new IllegalArgumentException("Portion share must be lower then "+meal.getPortionShare());
         }
         meal.setPortionShare(meal.getPortionShare() - portitionShare);
+        mealRepository.save(meal);
     }
 
     public List<Dish> getDishesByUserAndTime(User user, LocalDateTime timeAfter, LocalDateTime timeBefore) {
@@ -79,12 +81,16 @@ public class MealService {
     }
 
     public Meal mealDtoToMeal(MealDto mealDto) {
+        // Dish must be an already persisted entity, otherwise saving the meal fails with a transient-instance error.
+        Eating eating = eatingRepository.findByEatingName(mealDto.eatingName());
+        if (eating == null) {
+            throw new EntityNotFoundException("No eating with name=" + mealDto.eatingName());
+        }
         return new Meal(
-                mealDto.id(),
                 userService.getUserById(mealDto.userDto().id()),
-                dishService.dishDtoToDish(mealDto.dishDto()),
-                eatingRepository.findByEatingName(mealDto.eatingName()),
-                mealDto.partitionShare(),
+                dishService.getDishById(mealDto.dishDto().id()),
+                eating,
+                mealDto.portionShare(),
                 mealDto.time()
         );
     }

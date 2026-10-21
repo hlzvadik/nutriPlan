@@ -78,6 +78,10 @@ public class JwtService {
         return extractAllClaims(token, accessKey).getSubject();
     }
 
+    public String extractEmailFromRefreshToken(String token) {
+        return extractAllClaims(token, refreshKey).getSubject();
+    }
+
     public Date extractExpiration(String token) {
         return extractAllClaims(token, accessKey).getExpiration();
     }

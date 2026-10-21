@@ -9,6 +9,6 @@ public record MealDto (
         UserDto userDto,
         DishDto dishDto,
         EatingName eatingName,
-        Double partitionShare,
+        Double portionShare,
         LocalDateTime time
 ) {}

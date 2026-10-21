@@ -1,9 +1,5 @@
 package goltsov.nutriPlan.dto;
 
-import goltsov.nutriPlan.entities.Ingredient;
-import jakarta.persistence.*;
-
-import java.util.HashMap;
 import java.util.Map;
 
 public record DishDto(

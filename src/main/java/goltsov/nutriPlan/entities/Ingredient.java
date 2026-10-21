@@ -48,13 +48,15 @@ public class Ingredient {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Ingredient that = (Ingredient) o;
-        return Objects.equals(name, that.name) && Objects.equals(kcal, that.kcal) && Objects.equals(protein, that.protein) && Objects.equals(carbohydrates, that.carbohydrates) && Objects.equals(fats, that.fats) && Objects.equals(weight, that.weight);
+        if (this == o) return true;
+        // instanceof + getters (not getClass()/fields) so that Hibernate proxies compare correctly.
+        // Name is unique, so it is used as a stable natural key.
+        if (!(o instanceof Ingredient that)) return false;
+        return Objects.equals(getName(), that.getName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, kcal, protein, carbohydrates, fats, weight);
+        return Objects.hashCode(getName());
     }
 }

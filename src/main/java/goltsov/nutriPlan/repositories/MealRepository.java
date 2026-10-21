@@ -6,13 +6,15 @@ import goltsov.nutriPlan.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface MealRepository extends JpaRepository<Meal, Long> {
     Meal findByUserAndDish(User user, Dish dish);
-    void removeAllByDishAndUser(User user, Dish dish);
+    @Transactional
+    void removeAllByDishAndUser(Dish dish, User user);
     List<Meal> findAllByUserAndTimeBetween(User user, LocalDateTime timeAfter, LocalDateTime timeBefore);
 
     @Query("""
