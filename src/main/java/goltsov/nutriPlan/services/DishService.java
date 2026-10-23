@@ -1,10 +1,14 @@
 package goltsov.nutriPlan.services;
 
 import goltsov.nutriPlan.dto.DishDto;
+import goltsov.nutriPlan.dto.FilterSortRequestDishDto;
 import goltsov.nutriPlan.entities.Dish;
 import goltsov.nutriPlan.entities.Ingredient;
 import goltsov.nutriPlan.repositories.DishRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -74,6 +78,24 @@ public class DishService {
         Dish dish = dishRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found by id="+id));
         dish.removeIngredient(ingredient);
         dishRepository.save(dish);
+    }
+
+    public Page<Dish> getFilteredDishes(FilterSortRequestDishDto dto) {
+        // Превращаем List<SortCriterial> в Spring Sort
+        List<Sort.Order> orders = dto.sort() == null ? List.of() : dto.sort().stream()
+                .map(s -> new Sort.Order(
+                        "DESC".equalsIgnoreCase(s.direction()) ? Sort.Direction.DESC : Sort.Direction.ASC,
+                        s.field()
+                ))
+                .toList();
+
+        Sort sort = orders.isEmpty() ? Sort.unsorted() : Sort.by(orders);
+
+        // Формируем Pageable (пагинация + сортировка)
+        PageRequest pageable = PageRequest.of(dto.page(), dto.size(), sort);
+
+        // Вызываем запрос
+        return dishRepository.getWithFilterAndSort(dto, pageable);
     }
 
     public DishDto dishToDishDto(Dish dish) {

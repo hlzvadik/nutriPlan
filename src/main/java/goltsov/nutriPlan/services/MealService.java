@@ -55,14 +55,8 @@ public class MealService {
         mealRepository.save(meal);
     }
 
-    public List<Dish> getDishesByUserAndTime(User user, LocalDateTime timeAfter, LocalDateTime timeBefore) {
-        List<Meal> meals = mealRepository.findAllByUserAndTimeBetweenWithDetails(user, timeAfter, timeBefore);
-        List<Dish> dishes = new ArrayList<>();
-        for (Meal meal: meals) {
-            meal.getDish().getIngredientWeightMap();
-            dishes.add(meal.getDish());
-        }
-        return dishes;
+    public List<Meal> getMealsByUserAndTime(User user, LocalDateTime timeAfter, LocalDateTime timeBefore) {
+        return mealRepository.findAllByUserAndTimeBetweenWithDetails(user, timeAfter, timeBefore);
     }
 
     public Meal addMeal(Meal meal) {
@@ -81,7 +75,6 @@ public class MealService {
     }
 
     public Meal mealDtoToMeal(MealDto mealDto) {
-        // Dish must be an already persisted entity, otherwise saving the meal fails with a transient-instance error.
         Eating eating = eatingRepository.findByEatingName(mealDto.eatingName());
         if (eating == null) {
             throw new EntityNotFoundException("No eating with name=" + mealDto.eatingName());

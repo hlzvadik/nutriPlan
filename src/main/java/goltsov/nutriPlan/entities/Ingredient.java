@@ -49,8 +49,6 @@ public class Ingredient {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        // instanceof + getters (not getClass()/fields) so that Hibernate proxies compare correctly.
-        // Name is unique, so it is used as a stable natural key.
         if (!(o instanceof Ingredient that)) return false;
         return Objects.equals(getName(), that.getName());
     }

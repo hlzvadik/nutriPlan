@@ -54,7 +54,6 @@ public class ApiAuthenticationController {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
-        // Roles from the request are intentionally ignored: otherwise anyone could register as ROLE_ADMIN.
         Role userRole = roleRepository.getRoleByRoleName(RoleName.ROLE_USER);
         if (userRole == null) {
             throw new IllegalStateException("Role " + RoleName.ROLE_USER + " is not initialized");

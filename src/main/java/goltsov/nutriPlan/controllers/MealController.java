@@ -1,15 +1,22 @@
 package goltsov.nutriPlan.controllers;
 
+import goltsov.nutriPlan.dto.DishDto;
 import goltsov.nutriPlan.dto.MealDto;
+import goltsov.nutriPlan.entities.Dish;
 import goltsov.nutriPlan.entities.Meal;
 import goltsov.nutriPlan.entities.RoleName;
 import goltsov.nutriPlan.entities.User;
 import goltsov.nutriPlan.services.MealService;
 import goltsov.nutriPlan.services.UserService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/meal")
@@ -21,6 +28,14 @@ public class MealController {
     public MealController(MealService mealService, UserService userService) {
         this.mealService = mealService;
         this.userService = userService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<MealDto>> getMeals(Authentication authentication,
+                                                  @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime timeAfter,
+                                                  @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime timeBefore) {
+        List<Meal> meals = mealService.getMealsByUserAndTime(userService.getUserByEmail(authentication.getName()), timeAfter, timeBefore);
+        return ResponseEntity.ok(meals.stream().map(mealService::mealToMealDto).toList());
     }
 
     @PostMapping

@@ -29,7 +29,7 @@ public class Dish {
     @Column(nullable = false)
     private Double fats;
     @Column(nullable = false)
-    private int rawWeight;
+    private Integer rawWeight;
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "dishes_ingredients", joinColumns = @JoinColumn(name = "dish_id"))
     @MapKeyJoinColumn(name = "ingredient_id")

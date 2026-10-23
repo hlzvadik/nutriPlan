@@ -27,10 +27,6 @@ public class JwtFilter extends OncePerRequestFilter {
         this.userService = userService;
     }
 
-    /**
-     * Auth endpoints (login/register/refresh) must not be checked as access-token protected:
-     * /api/auth/refresh receives a refresh token, which is signed with a different key.
-     */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         return request.getRequestURI().startsWith("/api/auth/");
