@@ -1,30 +1,23 @@
 package goltsov.nutriPlan.controllers;
 
 import goltsov.nutriPlan.dto.DishDto;
-import goltsov.nutriPlan.dto.FilterSortRequestDish;
+import goltsov.nutriPlan.dto.FilterSortRequestDishDto;
 import goltsov.nutriPlan.entities.Dish;
+import goltsov.nutriPlan.entities.RoleName;
 import goltsov.nutriPlan.services.DishService;
-import goltsov.nutriPlan.services.MealService;
-import goltsov.nutriPlan.services.UserService;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/dish")
 public class DishController {
-    private final MealService mealService;
-    private final UserService userService;
     private final DishService dishService;
 
-    public DishController(MealService mealService, UserService userService, DishService dishService) {
-        this.mealService = mealService;
-        this.userService = userService;
+    public DishController(DishService dishService) {
         this.dishService = dishService;
     }
 
@@ -35,7 +28,22 @@ public class DishController {
     }
 
     @GetMapping("/filters")
-    public ResponseEntity<List<DishDto>> getDishesWithFiltersAndSort(@RequestBody FilterSortRequestDish filterSortRequestDish) {
+    public ResponseEntity<Page<DishDto>> getDishesWithFiltersAndSort(@RequestBody FilterSortRequestDishDto filterSortRequestDishDto) {
+        return ResponseEntity.ok(dishService.getFilteredDishes(filterSortRequestDishDto).map(dishService::dishToDishDto));
+    }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDishById(Authentication authentication, @PathVariable Long id) {
+        checkAccess(authentication);
+        dishService.deleteDishById(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    private void checkAccess(Authentication authentication) {
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(authority -> RoleName.ROLE_ADMIN.name().equals(authority.getAuthority()));
+        if (!isAdmin) {
+            throw new AccessDeniedException("No authority for user");
+        }
     }
 }

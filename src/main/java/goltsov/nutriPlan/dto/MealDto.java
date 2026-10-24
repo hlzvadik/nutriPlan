@@ -11,4 +11,5 @@ public record MealDto (
         EatingName eatingName,
         Double portionShare,
         LocalDateTime time
-) {}
+) {
+}

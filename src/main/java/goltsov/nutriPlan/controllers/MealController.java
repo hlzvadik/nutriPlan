@@ -1,8 +1,6 @@
 package goltsov.nutriPlan.controllers;
 
-import goltsov.nutriPlan.dto.DishDto;
 import goltsov.nutriPlan.dto.MealDto;
-import goltsov.nutriPlan.entities.Dish;
 import goltsov.nutriPlan.entities.Meal;
 import goltsov.nutriPlan.entities.RoleName;
 import goltsov.nutriPlan.entities.User;
@@ -15,7 +13,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController

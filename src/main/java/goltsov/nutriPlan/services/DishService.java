@@ -81,7 +81,6 @@ public class DishService {
     }
 
     public Page<Dish> getFilteredDishes(FilterSortRequestDishDto dto) {
-        // Превращаем List<SortCriterial> в Spring Sort
         List<Sort.Order> orders = dto.sort() == null ? List.of() : dto.sort().stream()
                 .map(s -> new Sort.Order(
                         "DESC".equalsIgnoreCase(s.direction()) ? Sort.Direction.DESC : Sort.Direction.ASC,
@@ -90,11 +89,7 @@ public class DishService {
                 .toList();
 
         Sort sort = orders.isEmpty() ? Sort.unsorted() : Sort.by(orders);
-
-        // Формируем Pageable (пагинация + сортировка)
         PageRequest pageable = PageRequest.of(dto.page(), dto.size(), sort);
-
-        // Вызываем запрос
         return dishRepository.getWithFilterAndSort(dto, pageable);
     }
 

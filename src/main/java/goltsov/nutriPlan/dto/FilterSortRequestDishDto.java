@@ -31,7 +31,6 @@ public record FilterSortRequestDishDto(
 
 
     public record Range<T extends Number & Comparable<T>>(T min, T max) {
-
         public Range {
             boolean isInteger = (min instanceof Integer) || (max instanceof Integer);
 
@@ -48,7 +47,6 @@ public record FilterSortRequestDishDto(
                         "Range min (%s) must be <= max (%s)".formatted(min, max));
             }
         }
-
         @SuppressWarnings("unchecked")
         private static <T> T cast(Object o) {
             return (T) o;
