@@ -1,11 +1,9 @@
 package goltsov.nutriPlan.controllers;
 
 import goltsov.nutriPlan.dto.DishDto;
-import goltsov.nutriPlan.dto.FilterSortRequestDishDto;
 import goltsov.nutriPlan.entities.Dish;
 import goltsov.nutriPlan.entities.RoleName;
 import goltsov.nutriPlan.services.DishService;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -21,22 +19,18 @@ public class DishController {
         this.dishService = dishService;
     }
 
-    @PostMapping
-    public ResponseEntity<DishDto> newDish(@RequestBody DishDto dishDto) {
-        Dish savedDish = dishService.createDish(dishService.dishDtoToDish(dishDto));
-        return ResponseEntity.ok(dishService.dishToDishDto(savedDish));
-    }
-
-    @GetMapping("/filters")
-    public ResponseEntity<Page<DishDto>> getDishesWithFiltersAndSort(@RequestBody FilterSortRequestDishDto filterSortRequestDishDto) {
-        return ResponseEntity.ok(dishService.getFilteredDishes(filterSortRequestDishDto).map(dishService::dishToDishDto));
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDishById(Authentication authentication, @PathVariable Long id) {
         checkAccess(authentication);
         dishService.deleteDishById(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PostMapping
+    public ResponseEntity<DishDto> newDish(Authentication authentication, @RequestBody DishDto dishDto) {
+        checkAccess(authentication);
+        Dish savedDish = dishService.createDish(dishService.dishDtoToDish(dishDto));
+        return ResponseEntity.ok(dishService.dishToDishDto(savedDish));
     }
 
     private void checkAccess(Authentication authentication) {

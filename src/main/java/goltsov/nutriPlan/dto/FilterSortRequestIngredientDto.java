@@ -3,11 +3,11 @@ package goltsov.nutriPlan.dto;
 import java.util.List;
 
 public record FilterSortRequestIngredientDto (
-        FilterSortRequestDishDto.Range<Double> kcal,
-        FilterSortRequestDishDto.Range<Double> protein,
-        FilterSortRequestDishDto.Range<Double> carbohydrates,
-        FilterSortRequestDishDto.Range<Double> fats,
-        FilterSortRequestDishDto.Range<Integer> weight,
+        Range<Double> kcal,
+        Range<Double> protein,
+        Range<Double> carbohydrates,
+        Range<Double> fats,
+        Range<Integer> weight,
 
         List<String> goodNames,
         List<String> badNames,
@@ -19,11 +19,11 @@ public record FilterSortRequestIngredientDto (
     public FilterSortRequestIngredientDto {
         page = page != null ? page : 0;
         size = size != null ? size : 20;
-        kcal = kcal != null ? kcal : new FilterSortRequestDishDto.Range<>(0.0, Double.MAX_VALUE);
-        protein = protein != null ? protein : new FilterSortRequestDishDto.Range<>(0.0, Double.MAX_VALUE);
-        carbohydrates = carbohydrates != null ? carbohydrates : new FilterSortRequestDishDto.Range<>(0.0, Double.MAX_VALUE);
-        fats = fats != null ? fats : new FilterSortRequestDishDto.Range<>(0.0, Double.MAX_VALUE);
-        weight = weight != null ? weight : new FilterSortRequestDishDto.Range<>(0, Integer.MAX_VALUE);
+        kcal = kcal != null ? kcal : new Range<>(0.0, Double.MAX_VALUE);
+        protein = protein != null ? protein : new Range<>(0.0, Double.MAX_VALUE);
+        carbohydrates = carbohydrates != null ? carbohydrates : new Range<>(0.0, Double.MAX_VALUE);
+        fats = fats != null ? fats : new Range<>(0.0, Double.MAX_VALUE);
+        weight = weight != null ? weight : new Range<>(0, Integer.MAX_VALUE);
     }
 
 

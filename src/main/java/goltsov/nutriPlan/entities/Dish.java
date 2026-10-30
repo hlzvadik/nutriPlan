@@ -5,9 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @Getter
 @Setter
@@ -30,6 +28,24 @@ public class Dish {
     private Double fats;
     @Column(nullable = false)
     private Integer rawWeight;
+    @OneToOne(mappedBy = "dish", cascade = CascadeType.REMOVE)
+    private Recipe recipe;
+    @Column(name = "count_likes")
+    private Integer countLikes;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "dishes_eatings",
+            joinColumns = @JoinColumn(name = "dish_id"),
+            inverseJoinColumns = @JoinColumn(name = "eating_id")
+    )
+    private Set<Eating> eatings = new HashSet<>();
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_dish_likes",
+            joinColumns = @JoinColumn(name = "dish_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> likedUsers;
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "dishes_ingredients", joinColumns = @JoinColumn(name = "dish_id"))
     @MapKeyJoinColumn(name = "ingredient_id")
@@ -37,23 +53,27 @@ public class Dish {
     private Map<Ingredient, Integer> ingredientWeightMap = new HashMap<>();
 
 
-    public Dish(String name, Double kcal, Double protein, Double carbohydrates, Double fats, int rawWeight, Map<Ingredient, Integer> ingredientWeightMap) {
+    public Dish(String name, Double kcal, Double protein, Double carbohydrates, Double fats, int rawWeight, int countLikes, Set<Eating> eatings, Map<Ingredient, Integer> ingredientWeightMap) {
         this.name = name;
         this.kcal = kcal;
         this.protein = protein;
         this.carbohydrates = carbohydrates;
         this.fats = fats;
         this.rawWeight = rawWeight;
+        this.countLikes = countLikes;
+        this.eatings = eatings;
         this.ingredientWeightMap = new HashMap<>(ingredientWeightMap);
     }
 
-    public Dish(String name, Double kcal, Double protein, Double carbohydrates, Double fats, int rawWeight) {
+    public Dish(String name, Double kcal, Double protein, Double carbohydrates, Double fats, int rawWeight, int countLikes, Set<Eating> eatings) {
         this.name = name;
         this.kcal = kcal;
         this.protein = protein;
         this.carbohydrates = carbohydrates;
         this.fats = fats;
         this.rawWeight = rawWeight;
+        this.countLikes = countLikes;
+        this.eatings = eatings;
     }
 
     public void addIngredient(Ingredient ingredient, int weight) {
@@ -120,5 +140,10 @@ public class Dish {
         carbohydrates -= ingredientCarbohydrates;
         fats -= ingredientFats;
         rawWeight -= weight;
+    }
+
+    public int incrementCountLikes() {
+        countLikes++;
+        return countLikes;
     }
 }

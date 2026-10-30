@@ -3,27 +3,31 @@ package goltsov.nutriPlan.services;
 import goltsov.nutriPlan.dto.DishDto;
 import goltsov.nutriPlan.dto.FilterSortRequestDishDto;
 import goltsov.nutriPlan.entities.Dish;
+import goltsov.nutriPlan.entities.Eating;
+import goltsov.nutriPlan.entities.EatingName;
 import goltsov.nutriPlan.entities.Ingredient;
 import goltsov.nutriPlan.repositories.DishRepository;
+import goltsov.nutriPlan.repositories.EatingRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DishService {
     private final IngredientService ingredientService;
 
     private final DishRepository dishRepository;
+    private final EatingRepository eatingRepository;
 
-    public DishService(IngredientService ingredientService, DishRepository dishRepository) {
+    public DishService(IngredientService ingredientService, DishRepository dishRepository, EatingRepository eatingRepository) {
         this.ingredientService = ingredientService;
         this.dishRepository = dishRepository;
+        this.eatingRepository = eatingRepository;
     }
 
     public Dish getDishById(Long dishId) {
@@ -90,7 +94,16 @@ public class DishService {
 
         Sort sort = orders.isEmpty() ? Sort.unsorted() : Sort.by(orders);
         PageRequest pageable = PageRequest.of(dto.page(), dto.size(), sort);
-        return dishRepository.getWithFilterAndSort(dto, pageable);
+        Double avgKcal = (dto.kcal().min() + dto.kcal().max()) / 2;
+        Page<Dish> result = dishRepository.getWithFilterAndSort(dto, avgKcal, pageable);
+        return result.map(dish -> {
+            dish.setProtein(dish.getProtein() * avgKcal / dish.getKcal());
+            dish.setCarbohydrates(dish.getCarbohydrates() * avgKcal / dish.getKcal());
+            dish.setFats(dish.getFats() * avgKcal / dish.getKcal());
+            dish.setRawWeight((int) (dish.getRawWeight() * avgKcal / dish.getKcal()));
+            dish.getIngredientWeightMap().entrySet().stream().map(entry -> Map.entry(entry.getKey(), entry.getValue() * avgKcal / dish.getKcal()));
+            return dish;
+        });
     }
 
     public DishDto dishToDishDto(Dish dish) {
@@ -106,6 +119,9 @@ public class DishService {
                 dish.getCarbohydrates(),
                 dish.getFats(),
                 dish.getRawWeight(),
+                dish.getRecipe().getId(),
+                dish.getCountLikes(),
+                dish.getEatings().stream().map((eating) -> eating.getEatingName().toString()).collect(Collectors.toSet()),
                 ingredientWeightMap
         );
     }
@@ -119,6 +135,11 @@ public class DishService {
             }
             ingredientWeightMap.put(ingredient, entry.getValue());
         }
+        Set<Eating> eatings = new HashSet<>();
+        for (String eating: dishDto.eatings()) {
+            Eating eating1 = eatingRepository.findByEatingName(EatingName.valueOf(eating));
+            eatings.add(eating1);
+        }
         return new Dish(
                 dishDto.name(),
                 dishDto.kcal(),
@@ -126,6 +147,8 @@ public class DishService {
                 dishDto.carbohydrates(),
                 dishDto.fats(),
                 dishDto.rawWeight(),
+                dishDto.countLikes(),
+                eatings,
                 ingredientWeightMap
         );
     }

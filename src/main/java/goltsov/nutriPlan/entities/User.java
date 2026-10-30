@@ -42,6 +42,9 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Meal> meals = new ArrayList<>();
 
+    @ManyToMany(mappedBy = "likedUsers")
+    private Set<Dish> likedDishes;
+
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "inventory", joinColumns = @JoinColumn(name = "user_id"))
     @MapKeyJoinColumn(name = "ingredient_id")
