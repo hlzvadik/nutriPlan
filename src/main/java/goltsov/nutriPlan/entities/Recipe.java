@@ -19,6 +19,7 @@ public class Recipe {
     @JoinColumn(name = "dish_id")
     private Dish dish;
 
+    @Column(columnDefinition = "TEXT")
     private String recipe;
 
     public Recipe(Dish dish, String recipe) {

@@ -7,9 +7,11 @@ import goltsov.nutriPlan.entities.RoleName;
 import goltsov.nutriPlan.repositories.EatingRepository;
 import goltsov.nutriPlan.repositories.RoleRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
+@Order(1)
 public class DataInitializer implements CommandLineRunner {
 
     private final RoleRepository roleRepository;

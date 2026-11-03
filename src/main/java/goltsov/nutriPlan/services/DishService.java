@@ -94,16 +94,32 @@ public class DishService {
 
         Sort sort = orders.isEmpty() ? Sort.unsorted() : Sort.by(orders);
         PageRequest pageable = PageRequest.of(dto.page(), dto.size(), sort);
-        Double avgKcal = (dto.kcal().min() + dto.kcal().max()) / 2;
+        Double avgKcal = dto.kcal().max() >= Double.MAX_VALUE ? null : (dto.kcal().min() + dto.kcal().max()) / 2;
         Page<Dish> result = dishRepository.getWithFilterAndSort(dto, avgKcal, pageable);
-        return result.map(dish -> {
-            dish.setProtein(dish.getProtein() * avgKcal / dish.getKcal());
-            dish.setCarbohydrates(dish.getCarbohydrates() * avgKcal / dish.getKcal());
-            dish.setFats(dish.getFats() * avgKcal / dish.getKcal());
-            dish.setRawWeight((int) (dish.getRawWeight() * avgKcal / dish.getKcal()));
-            dish.getIngredientWeightMap().entrySet().stream().map(entry -> Map.entry(entry.getKey(), entry.getValue() * avgKcal / dish.getKcal()));
-            return dish;
-        });
+        if (avgKcal == null) {
+            return result;
+        }
+        return result.map(dish -> scaleToKcal(dish, avgKcal));
+    }
+
+    private Dish scaleToKcal(Dish dish, double targetKcal) {
+        double k = targetKcal / dish.getKcal();
+        Map<Ingredient, Integer> scaledIngredients = new HashMap<>();
+        dish.getIngredientWeightMap().forEach((ingredient, weight) -> scaledIngredients.put(ingredient, (int) Math.round(weight * k)));
+        Dish copy = new Dish(
+                dish.getName(),
+                targetKcal,
+                dish.getProtein() * k,
+                dish.getCarbohydrates() * k,
+                dish.getFats() * k,
+                (int) Math.round(dish.getRawWeight() * k),
+                dish.getCountLikes() != null ? dish.getCountLikes() : 0,
+                new HashSet<>(dish.getEatings()),
+                scaledIngredients
+        );
+        copy.setId(dish.getId());
+        copy.setRecipe(dish.getRecipe());
+        return copy;
     }
 
     public DishDto dishToDishDto(Dish dish) {
@@ -119,8 +135,8 @@ public class DishService {
                 dish.getCarbohydrates(),
                 dish.getFats(),
                 dish.getRawWeight(),
-                dish.getRecipe().getId(),
-                dish.getCountLikes(),
+                dish.getRecipe() != null ? dish.getRecipe().getId() : 0L,
+                dish.getCountLikes() != null ? dish.getCountLikes() : 0,
                 dish.getEatings().stream().map((eating) -> eating.getEatingName().toString()).collect(Collectors.toSet()),
                 ingredientWeightMap
         );

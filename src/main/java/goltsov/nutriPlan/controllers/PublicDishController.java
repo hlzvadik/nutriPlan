@@ -16,7 +16,7 @@ public class PublicDishController {
         this.dishService = dishService;
     }
 
-    @GetMapping("/filters")
+    @RequestMapping(value = "/filters", method = {RequestMethod.GET, RequestMethod.POST})
     public ResponseEntity<Page<DishDto>> getDishesWithFiltersAndSort(@RequestBody FilterSortRequestDishDto filterSortRequestDishDto) {
         return ResponseEntity.ok(dishService.getFilteredDishes(filterSortRequestDishDto).map(dishService::dishToDishDto));
     }

@@ -24,6 +24,8 @@ public record FilterSortRequestIngredientDto (
         carbohydrates = carbohydrates != null ? carbohydrates : new Range<>(0.0, Double.MAX_VALUE);
         fats = fats != null ? fats : new Range<>(0.0, Double.MAX_VALUE);
         weight = weight != null ? weight : new Range<>(0, Integer.MAX_VALUE);
+        goodNames = goodNames == null || goodNames.isEmpty() ? null : goodNames;
+        badNames = badNames == null || badNames.isEmpty() ? null : badNames;
     }
 
 

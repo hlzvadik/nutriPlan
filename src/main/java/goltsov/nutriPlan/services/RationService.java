@@ -8,12 +8,14 @@ import goltsov.nutriPlan.entities.EatingName;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class RationService {
+
+    private static final List<EatingName> RATION_EATINGS = List.of(EatingName.BREAKFAST, EatingName.LUNCH, EatingName.DINNER);
 
     private final DishService dishService;
 
@@ -21,68 +23,40 @@ public class RationService {
         this.dishService = dishService;
     }
 
-    public Map<EatingName, Page<Dish>> getRationByFilters(FilterSortRationDto filterSortRationDto) {
-        Map<EatingName, Page<Dish>> result = new HashMap<>();
-        result.put(EatingName.BREAKFAST, dishService.getFilteredDishes(new FilterSortRequestDishDto(
-                new Range<>(filterSortRationDto.kcal().min() * filterSortRationDto.percents().get(0), filterSortRationDto.kcal().max() * filterSortRationDto.percents().get(0)),
-                new Range<>(filterSortRationDto.protein().min() * filterSortRationDto.percents().get(0), filterSortRationDto.protein().max() * filterSortRationDto.percents().get(0)),
-                new Range<>(filterSortRationDto.carbohydrates().min() * filterSortRationDto.percents().get(0), filterSortRationDto.carbohydrates().max() * filterSortRationDto.percents().get(0)),
-                new Range<>(filterSortRationDto.fats().min() * filterSortRationDto.percents().get(0), filterSortRationDto.fats().max() * filterSortRationDto.percents().get(0)),
-                new Range<>(filterSortRationDto.rawWeight().min() * filterSortRationDto.percents().get(0), filterSortRationDto.rawWeight().max() * filterSortRationDto.percents().get(0)),
-
-                null,
-                null,
-
-                null,
-                filterSortRationDto.badIngredients(),
-
-                List.of(EatingName.BREAKFAST.toString()),
-
-                filterSortRationDto.page(),
-                filterSortRationDto.size(),
-
-                List.of(new FilterSortRequestDishDto.SortCriterial("countLikes", "DESC"))
-        )));
-        result.put(EatingName.LUNCH, dishService.getFilteredDishes(new FilterSortRequestDishDto(
-                new Range<>(filterSortRationDto.kcal().min() * filterSortRationDto.percents().get(1), filterSortRationDto.kcal().max() * filterSortRationDto.percents().get(1)),
-                new Range<>(filterSortRationDto.protein().min() * filterSortRationDto.percents().get(1), filterSortRationDto.protein().max() * filterSortRationDto.percents().get(1)),
-                new Range<>(filterSortRationDto.carbohydrates().min() * filterSortRationDto.percents().get(1), filterSortRationDto.carbohydrates().max() * filterSortRationDto.percents().get(1)),
-                new Range<>(filterSortRationDto.fats().min() * filterSortRationDto.percents().get(1), filterSortRationDto.fats().max() * filterSortRationDto.percents().get(1)),
-                new Range<>(filterSortRationDto.rawWeight().min() * filterSortRationDto.percents().get(1), filterSortRationDto.rawWeight().max() * filterSortRationDto.percents().get(1)),
-
-                null,
-                null,
-
-                null,
-                filterSortRationDto.badIngredients(),
-
-                List.of(EatingName.LUNCH.toString()),
-
-                filterSortRationDto.page(),
-                filterSortRationDto.size(),
-
-                List.of(new FilterSortRequestDishDto.SortCriterial("countLikes", "DESC"))
-        )));
-        result.put(EatingName.DINNER, dishService.getFilteredDishes(new FilterSortRequestDishDto(
-                new Range<>(filterSortRationDto.kcal().min() * filterSortRationDto.percents().get(2), filterSortRationDto.kcal().max() * filterSortRationDto.percents().get(2)),
-                new Range<>(filterSortRationDto.protein().min() * filterSortRationDto.percents().get(2), filterSortRationDto.protein().max() * filterSortRationDto.percents().get(2)),
-                new Range<>(filterSortRationDto.carbohydrates().min() * filterSortRationDto.percents().get(2), filterSortRationDto.carbohydrates().max() * filterSortRationDto.percents().get(2)),
-                new Range<>(filterSortRationDto.fats().min() * filterSortRationDto.percents().get(2), filterSortRationDto.fats().max() * filterSortRationDto.percents().get(2)),
-                new Range<>(filterSortRationDto.rawWeight().min() * filterSortRationDto.percents().get(2), filterSortRationDto.rawWeight().max() * filterSortRationDto.percents().get(2)),
-
-                null,
-                null,
-
-                null,
-                filterSortRationDto.badIngredients(),
-
-                List.of(EatingName.DINNER.toString()),
-
-                filterSortRationDto.page(),
-                filterSortRationDto.size(),
-
-                List.of(new FilterSortRequestDishDto.SortCriterial("countLikes", "DESC"))
-        )));
+    public Map<EatingName, Page<Dish>> getRationByFilters(FilterSortRationDto dto) {
+        Map<EatingName, Page<Dish>> result = new LinkedHashMap<>();
+        for (int i = 0; i < RATION_EATINGS.size(); i++) {
+            EatingName eating = RATION_EATINGS.get(i);
+            double share = dto.percents().get(i) / 100.0;
+            result.put(eating, dishService.getFilteredDishes(buildFilter(dto, eating, share)));
+        }
         return result;
+    }
+
+    private FilterSortRequestDishDto buildFilter(FilterSortRationDto dto, EatingName eating, double share) {
+        return new FilterSortRequestDishDto(
+                scale(dto.kcal(), share),
+                scale(dto.protein(), share),
+                scale(dto.carbohydrates(), share),
+                scale(dto.fats(), share),
+                new Range<>((int) (dto.rawWeight().min() * share), (int) (dto.rawWeight().max() * share)),
+
+                null,
+                null,
+
+                null,
+                dto.badIngredients(),
+
+                List.of(eating),
+
+                dto.page(),
+                dto.size(),
+
+                List.of(new FilterSortRequestDishDto.SortCriterial("countLikes", "DESC"))
+        );
+    }
+
+    private Range<Double> scale(Range<Double> range, double share) {
+        return new Range<>(range.min() * share, range.max() * share);
     }
 }

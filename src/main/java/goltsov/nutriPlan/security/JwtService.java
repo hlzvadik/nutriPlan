@@ -125,10 +125,10 @@ public class JwtService {
         if (!validateRefreshToken(refreshToken)) {
             throw new RuntimeException("Invalid refresh token");
         } else {
-            String userEmail = extractEmail(refreshToken);
+            String userEmail = extractEmailFromRefreshToken(refreshToken);
             return generateAccessToken(userEmail);
         }
     }
 
-    
+
 }

@@ -15,10 +15,12 @@ public interface DishRepository extends JpaRepository<Dish, Long> {
     @Query("""
             SELECT dish FROM Dish dish
             WHERE
-                dish.protein * :#{#avgKcal} / dish.kcal BETWEEN :#{#dto.protein.min} AND :#{#dto.protein.max}
-            AND dish.carbohydrates * :#{#avgKcal} / dish.kcal BETWEEN :#{#dto.carbohydrates.min} AND :#{#dto.carbohydrates.max}
-            AND dish.fats * :#{#avgKcal} / dish.kcal BETWEEN :#{#dto.fats.min} AND :#{#dto.fats.max}
-            AND dish.rawWeight * :#{#avgKcal} / dish.kcal BETWEEN :#{#dto.rawWeight.min} AND :#{#dto.rawWeight.max}
+                dish.kcal > 0
+            AND (:#{#avgKcal} IS NOT NULL OR dish.kcal BETWEEN :#{#dto.kcal.min} AND :#{#dto.kcal.max})
+            AND dish.protein * COALESCE(:#{#avgKcal}, dish.kcal) / dish.kcal BETWEEN :#{#dto.protein.min} AND :#{#dto.protein.max}
+            AND dish.carbohydrates * COALESCE(:#{#avgKcal}, dish.kcal) / dish.kcal BETWEEN :#{#dto.carbohydrates.min} AND :#{#dto.carbohydrates.max}
+            AND dish.fats * COALESCE(:#{#avgKcal}, dish.kcal) / dish.kcal BETWEEN :#{#dto.fats.min} AND :#{#dto.fats.max}
+            AND dish.rawWeight * COALESCE(:#{#avgKcal}, dish.kcal) / dish.kcal BETWEEN :#{#dto.rawWeight.min} AND :#{#dto.rawWeight.max}
             
             AND (:#{#dto.goodNames} IS NULL OR dish.name IN :#{#dto.goodNames})
             AND (:#{#dto.badNames} IS NULL OR dish.name NOT IN :#{#dto.badNames})
@@ -29,7 +31,7 @@ public interface DishRepository extends JpaRepository<Dish, Long> {
                  JOIN d2.ingredientWeightMap m
                  WHERE d2 = dish
                    AND KEY(m).name IN :#{#dto.mandatoryIngredients})
-                = :#{#dto.mandatoryIngredients.size()})
+                = :#{#dto.mandatoryIngredientsCount()})
             
             AND (:#{#dto.badIngredients} IS NULL OR
                 (SELECT COUNT(DISTINCT KEY(m).name)
@@ -45,7 +47,7 @@ public interface DishRepository extends JpaRepository<Dish, Long> {
                         JOIN d2.eatings e
                         WHERE d2 = dish
                         AND e.eatingName IN :#{#dto.mandatoryEatingNames()})
-                 = 1)
+                 = :#{#dto.mandatoryEatingNamesCount()})
             """)
     Page<Dish> getWithFilterAndSort(@Param("dto") FilterSortRequestDishDto dto, @Param("avgKcal") Double avgKcal, Pageable pageable);
 }

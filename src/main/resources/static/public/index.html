@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>NutriPlan — тестовый стенд</title>
+    <style>
+        :root{--bg:#f6f7f9;--fg:#1c1f24;--card:#fff;--bd:#d9dde3;--ac:#2f7d4f;--mut:#6b7280;--err:#b42318;--ok:#1a7f37}
+        @media(prefers-color-scheme:dark){:root{--bg:#15171a;--fg:#e6e8eb;--card:#1e2126;--bd:#343a42;--ac:#4cc27f;--mut:#9aa3ad;--err:#ff7b72;--ok:#56d364}}
+        *{box-sizing:border-box}body{margin:0;font:14px/1.45 system-ui,sans-serif;background:var(--bg);color:var(--fg)}
+        header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--bd)}
+        header b{color:var(--ac);font-size:16px}main{max-width:1000px;margin:0 auto;padding:12px 16px}
+        nav{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px}nav button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+        input,select,textarea,button{font:inherit;color:inherit;background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:5px 8px}
+        button{cursor:pointer}button.p{background:var(--ac);color:#fff;border-color:var(--ac)}input{width:110px}textarea{width:100%;font-family:ui-monospace,monospace;min-height:110px}
+        .card{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;margin:8px 0}
+        .row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}.row label{display:flex;flex-direction:column;font-size:12px;color:var(--mut)}
+        .mut{color:var(--mut)}.err{color:var(--err)}.ok{color:var(--ok)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px}
+        pre{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:8px;overflow:auto;max-height:320px;margin:6px 0;font-size:12px}
+        .hidden{display:none}h3{margin:8px 0 4px}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid var(--bd);padding:3px 6px;text-align:left}
+    </style></head><body>
+<header><b>NutriPlan</b><span id="who" class="mut">не авторизован</span>
+    <input id="em" placeholder="email" value="demo@nutriplan.local" style="width:170px"><input id="pw" type="password" placeholder="пароль" value="demo123">
+    <button class="p" onclick="login()">Войти</button><button onclick="reg()">Регистрация</button><button onclick="logout()">Выйти</button>
+    <span class="mut">быстро:</span><button onclick="quick('demo@nutriplan.local','demo123')">demo</button><button onclick="quick('admin@nutriplan.local','admin123')">admin</button></header>
+<main><nav id="tabs"></nav><div id="msg" class="mut"></div>
+    <section id="t-dishes"><div class="card"><div class="row">
+        <label>ккал (от)<input id="dk0"></label><label>ккал (до)<input id="dk1"></label>
+        <label>белки от/до<span><input id="dp0" style="width:50px"><input id="dp1" style="width:50px"></span></label>
+        <label>углев. от/до<span><input id="dc0" style="width:50px"><input id="dc1" style="width:50px"></span></label>
+        <label>жиры от/до<span><input id="df0" style="width:50px"><input id="df1" style="width:50px"></span></label>
+        <label>приём пищи<select id="de"><option value="">любой</option><option>BREAKFAST</option><option>LUNCH</option><option>DINNER</option><option>OTHER</option></select></label>
+        <label>нужные ингредиенты (через запятую)<input id="dmi" style="width:200px"></label><label>исключить ингредиенты<input id="dbi" style="width:160px"></label>
+        <label>сортировка<select id="ds"><option value="countLikes">лайки</option><option value="name">название</option><option value="kcal">ккал</option><option value="protein">белки</option></select></label>
+        <button class="p" onclick="dishes()">Найти</button></div>
+        <div class="mut">Если ккал «до» не задано, блюда не масштабируются. Если задано — каждое блюдо пересчитывается под среднее значение диапазона.</div></div><div id="dout"></div></section>
+    <section id="t-ration" class="hidden"><div class="card"><div class="row"><label>вес, кг<input id="rw" value="70"></label>
+        <label>пол<select id="rg"><option>MALE</option><option>FEMALE</option></select></label>
+        <label>проценты завтрак/обед/ужин<span><input id="r0" value="30" style="width:45px"><input id="r1" value="45" style="width:45px"><input id="r2" value="25" style="width:45px"></span></label>
+        <label>исключить ингредиенты<input id="rbi" style="width:180px"></label><button class="p" onclick="ration()">Составить рацион</button></div>
+        <div class="mut">Допустимые БЖУ по умолчанию узкие (≈15/50/35 % калорий), поэтому часть блюд в рацион не попадает — это ожидаемо.</div></div><div id="rout" class="grid"></div></section>
+    <section id="t-diary" class="hidden"><div class="card"><div class="row"><label>дата<input id="dd" type="date" style="width:150px"></label><button class="p" onclick="diary()">Показать</button></div></div><div id="diout"></div></section>
+    <section id="t-ing" class="hidden"><div class="card"><div class="row"><label>название содержит (точные имена через запятую)<input id="in" style="width:260px"></label>
+        <button class="p" onclick="ingr()">Найти</button><span class="mut">пусто = все ингредиенты</span></div></div><div id="iout"></div></section>
+    <section id="t-con" class="hidden"><div class="card"><div class="row"><button class="p" onclick="smoke()">▶ Автопроверка всех эндпоинтов</button>
+        <select id="pre" onchange="preset()"><option value="">— шаблон запроса —</option></select></div><div id="sout"></div></div>
+        <div class="card"><div class="row"><select id="cm"><option>GET</option><option>POST</option><option>DELETE</option></select><input id="cu" style="flex:1;width:auto" value="/api/user/profile"><button class="p" onclick="send()">Отправить</button></div>
+            <textarea id="cb" placeholder="JSON-тело"></textarea><pre id="co">ответ появится здесь</pre></div></section></main>
+<script>
+    const $=id=>document.getElementById(id);let tok=JSON.parse(localStorage.np||'null'),me=null;
+    const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])),f1=x=>Math.round(x*10)/10;
+    const say=(t,e)=>{$('msg').className=e?'err':'ok';$('msg').textContent=t};
+    async function raw(m,u,b,t){const h={};if(b!==undefined)h['Content-Type']='application/json';if(t)h.Authorization='Bearer '+t;
+        const r=await fetch(u,{method:m,headers:h,body:b!==undefined?JSON.stringify(b):undefined});const x=await r.text();let d=x;try{d=JSON.parse(x)}catch{}return{s:r.status,d}}
+    async function api(m,u,b){let r=await raw(m,u,b,tok&&tok.accessToken);
+        if(r.s===401&&tok&&tok.refreshToken){const q=await fetch('/api/auth/refresh',{method:'POST',headers:{Authorization:'Bearer '+tok.refreshToken}});
+            if(q.ok){tok=await q.json();localStorage.np=JSON.stringify(tok);r=await raw(m,u,b,tok.accessToken)}else setTok(null)}
+        if(r.s>=400)say(m+' '+u+' → '+r.s+' '+(typeof r.d==='string'?r.d:JSON.stringify(r.d)),1);else say('');return r}
+    async function setTok(t){tok=t;if(t)localStorage.np=JSON.stringify(t);else localStorage.removeItem('np');me=null;
+        if(t){const r=await raw('GET','/api/user/profile',undefined,t.accessToken);me=r.s===200?r.d:null}
+        $('who').textContent=me?(me.name||me.email)+' ['+(me.roles||[]).join(',')+']':'не авторизован'}
+    async function auth(p,b){const r=await raw('POST','/api/auth/'+p,b);if(r.s===200){await setTok(r.d);say('Вход выполнен')}else say(p+' → '+r.s+' '+JSON.stringify(r.d),1)}
+    const login=()=>auth('login',{username:$('em').value,password:$('pw').value});
+    const reg=()=>auth('register',{name:$('em').value.split('@')[0],email:$('em').value,password:$('pw').value,age:25});
+    const logout=()=>setTok(null);const quick=(e,p)=>{$('em').value=e;$('pw').value=p;login()};
+    const rng=(a,b)=>{const lo=$(a).value,hi=$(b).value;return lo||hi?{min:+(lo||0),max:+(hi||1e9)}:undefined};
+    const list=s=>s.split(',').map(x=>x.trim()).filter(Boolean);
+    function addBtn(id){return me?`<select id="e${id}">${['BREAKFAST','LUNCH','DINNER','OTHER'].map(x=>`<option>${x}</option>`).join('')}</select><input id="s${id}" value="1" style="width:45px" title="доля порции"><button onclick="eat(${id})">+ в дневник</button>`:'<span class="mut">войдите, чтобы добавить в дневник</span>'}
+    function dishCard(d){const ing=Object.entries(d.ingredientWeightMap||{}).map(([k,v])=>esc(k)+' '+v+' г').join(', ');
+        return `<div class="card"><b>${esc(d.name)}</b> <span class="mut">#${d.id} · ♥${d.countLikes} · ${(d.eatings||[]).join('/')}</span><br>
+ ${f1(d.kcal)} ккал · Б ${f1(d.protein)} · У ${f1(d.carbohydrates)} · Ж ${f1(d.fats)} · ${d.rawWeight} г<div class="mut">${ing}</div>
+ ${d.recipeId?`<button onclick="recipe(${d.recipeId},this)">Рецепт</button>`:''} ${addBtn(d.id)}
+ ${me&&(me.roles||[]).some(r=>/ADMIN/.test(r))?`<button onclick="delDish(${d.id})">Удалить (admin)</button>`:''}<div></div></div>`}
+    function dishBody(){const g=(a,b)=>rng(a,b);const b={kcal:g('dk0','dk1'),protein:g('dp0','dp1'),carbohydrates:g('dc0','dc1'),fats:g('df0','df1'),
+        mandatoryIngredients:list($('dmi').value),badIngredients:list($('dbi').value),sort:[{field:$('ds').value,direction:$('ds').value==='name'?'ASC':'DESC'}],size:20};
+        if($('de').value)b.mandatoryEatingNames=[$('de').value];return b}
+    async function dishes(){const r=await api('POST','/api/public/dish/filters',dishBody());if(r.s!==200)return;
+        $('dout').innerHTML=`<div class="mut">найдено: ${r.d.totalElements}</div>`+r.d.content.map(dishCard).join('')}
+    async function ration(){const p=[0,1,2].map(i=>+$('r'+i).value);const r=await api('POST','/api/public/ration/filter',{weight:+$('rw').value,gender:$('rg').value,percents:p,badIngredients:list($('rbi').value)});if(r.s!==200)return;
+        $('rout').innerHTML=Object.entries(r.d).map(([k,pg])=>`<div><h3>${k} <span class="mut">(${pg.totalElements})</span></h3>${pg.content.map(dishCard).join('')||'<span class="mut">нет подходящих блюд</span>'}</div>`).join('')}
+    async function recipe(id,btn){const r=await api('GET','/api/public/recipe/'+id);if(r.s===200)btn.parentNode.lastElementChild.innerHTML='<pre>'+esc(typeof r.d==='string'?r.d:JSON.stringify(r.d))+'</pre>'}
+    async function eat(id){const r=await api('POST','/api/meal',{userDto:{id:me.id},dishDto:{id},eatingName:$('e'+id).value,portionShare:+$('s'+id).value,time:new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,19)});if(r.s<300)say('Добавлено в дневник')}
+    async function delDish(id){if(confirm('Удалить блюдо '+id+'?')){const r=await api('DELETE','/api/dish/'+id);if(r.s<300)dishes()}}
+    async function diary(){if(!me)return say('Сначала войдите',1);const d=$('dd').value;const r=await api('GET',`/api/meal?timeAfter=${d}T00:00:00&timeBefore=${d}T23:59:59`);if(r.s!==200)return;
+        let t=[0,0,0,0];$('diout').innerHTML=r.d.map(m=>{const x=m.portionShare,k=m.dishDto;t[0]+=k.kcal*x;t[1]+=k.protein*x;t[2]+=k.carbohydrates*x;t[3]+=k.fats*x;
+                return `<div class="card">${esc(m.time)} · <b>${m.eatingName}</b> · ${esc(k.name)} × ${x} — ${f1(k.kcal*x)} ккал <button onclick="delMeal(${m.id})">Удалить</button></div>`}).join('')
+            +`<div class="card"><b>Итого за день:</b> ${f1(t[0])} ккал · Б ${f1(t[1])} · У ${f1(t[2])} · Ж ${f1(t[3])}</div>`}
+    async function delMeal(id){const r=await api('DELETE','/api/meal/'+id);if(r.s<300)diary()}
+    async function ingr(){const r=await api('POST','/api/public/ingredient/filters',{goodNames:list($('in').value),size:100,sort:[{field:'name',direction:'ASC'}]});if(r.s!==200)return;
+        $('iout').innerHTML=`<table><tr><th>Название</th><th>ккал</th><th>Б</th><th>У</th><th>Ж</th><th>на, г</th></tr>`+r.d.content.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.kcal}</td><td>${i.protein}</td><td>${i.carbohydrates}</td><td>${i.fats}</td><td>${i.weight}</td></tr>`).join('')+'</table>'}
+    const PRE={'Ингредиент (admin)':['POST','/api/ingredient',{name:'Тестовый ингредиент',kcal:100,protein:10,carbohydrates:10,fats:5,weight:100}],
+        'Блюдо (admin)':['POST','/api/dish',{name:'Тестовое блюдо',kcal:300,protein:20,carbohydrates:30,fats:10,rawWeight:200,countLikes:0,eatings:['LUNCH'],ingredientWeightMap:{'Рис белый (сухой)':80},recipeId:0}],
+        'Блюда: пустой фильтр':['POST','/api/public/dish/filters',{}],'Профиль':['GET','/api/user/profile']};
+    Object.keys(PRE).forEach(k=>$('pre').add(new Option(k,k)));
+    function preset(){const p=PRE[$('pre').value];if(!p)return;$('cm').value=p[0];$('cu').value=p[1];$('cb').value=p[2]?JSON.stringify(p[2],null,2):''}
+    async function send(){const b=$('cb').value.trim();const t0=performance.now();const r=await api($('cm').value,$('cu').value,b?JSON.parse(b):undefined);
+        $('co').textContent=r.s+' ('+Math.round(performance.now()-t0)+' мс)\n'+(typeof r.d==='string'?r.d:JSON.stringify(r.d,null,2))}
+    async function smoke(){const out=$('sout');out.innerHTML='';const T={};const L=async(e,p)=>(await raw('POST','/api/auth/login',{username:e,password:p})).d.accessToken;
+        const step=async(n,fn,ok=r=>r.s>=200&&r.s<300)=>{let r;try{r=await fn()}catch(e){r={s:'ERR',d:String(e)}}const g=ok(r);
+            out.innerHTML+=`<div class="${g?'ok':'err'}">${g?'✔':'✘'} ${esc(n)} <span class="mut">[${r.s}] ${g?'':esc(JSON.stringify(r.d).slice(0,300))}</span></div>`;return r};
+        T.u=await L('demo@nutriplan.local','demo123');T.a=await L('admin@nutriplan.local','admin123');
+        await step('логин demo и admin (нужен профиль demo)',async()=>({s:T.u&&T.a?200:401,d:'нет токенов'}));
+        await step('ингредиенты: пустой фильтр',()=>raw('POST','/api/public/ingredient/filters',{}));
+        await step('ингредиент по имени',()=>raw('GET','/api/public/ingredient/'+encodeURIComponent('Банан')));
+        await step('ингредиент по несуществующему имени → 404',()=>raw('GET','/api/public/ingredient/нет-такого'),r=>r.s===404);
+        const d=await step('блюда: пустой фильтр',()=>raw('POST','/api/public/dish/filters',{}));const dish=d.d&&d.d.content&&d.d.content[0]||{};
+        await step('блюда: масштабирование на 500–600 ккал',()=>raw('POST','/api/public/dish/filters',{kcal:{min:500,max:600},protein:{min:0,max:100},carbohydrates:{min:0,max:200},fats:{min:0,max:100}}));
+        await step('блюда: приём пищи BREAKFAST',()=>raw('POST','/api/public/dish/filters',{mandatoryEatingNames:['BREAKFAST']}));
+        await step('блюда: нужные ингредиенты',()=>raw('POST','/api/public/dish/filters',{mandatoryIngredients:['Банан','Миндаль']}));
+        await step('блюда: исключить ингредиент и пустые списки',()=>raw('POST','/api/public/dish/filters',{badIngredients:['Банан'],goodNames:[]}));
+        await step('рацион (70 кг) — по блюду в каждом приёме',()=>raw('POST','/api/public/ration/filter',{weight:70}),r=>r.s===200&&Object.values(r.d).every(p=>p.totalElements>0));
+        await step('рацион без weight → 400',()=>raw('POST','/api/public/ration/filter',{}),r=>r.s===400);
+        await step('рецепт',()=>raw('GET','/api/public/recipe/'+(dish.recipeId||1)));
+        await step('профиль без токена → 401',()=>raw('GET','/api/user/profile'),r=>r.s===401);
+        await step('профиль demo',()=>raw('GET','/api/user/profile',undefined,T.u));
+        const now=new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,19);const uid=(await raw('GET','/api/user/profile',undefined,T.u)).d.id;
+        const m=await step('дневник: добавить приём пищи',()=>raw('POST','/api/meal',{userDto:{id:uid},dishDto:{id:dish.id},eatingName:'DINNER',portionShare:0.5,time:now},T.u));
+        const day=now.slice(0,10);await step('дневник: за сегодня',()=>raw('GET',`/api/meal?timeAfter=${day}T00:00:00&timeBefore=${day}T23:59:59`,undefined,T.u));
+        if(m.d&&m.d.id)await step('дневник: удалить',()=>raw('DELETE','/api/meal/'+m.d.id,undefined,T.u));
+        await step('USER создаёт ингредиент → 403',()=>raw('POST','/api/ingredient',PRE['Ингредиент (admin)'][2],T.u),r=>r.s===403);
+        const ni=await step('ADMIN создаёт ингредиент',()=>raw('POST','/api/ingredient',PRE['Ингредиент (admin)'][2],T.a));
+        const nd=await step('ADMIN создаёт блюдо (без рецепта)',()=>raw('POST','/api/dish',PRE['Блюдо (admin)'][2],T.a));
+        if(nd.d&&nd.d.id)await step('ADMIN удаляет блюдо',()=>raw('DELETE','/api/dish/'+nd.d.id,undefined,T.a));
+        if(ni.d&&ni.d.id)await step('ADMIN удаляет ингредиент',()=>raw('DELETE','/api/ingredient/'+ni.d.id,undefined,T.a))}
+    const TABS={dishes:'Блюда',ration:'Рацион',diary:'Дневник',ing:'Ингредиенты',con:'Консоль / автопроверка'};
+    $('tabs').innerHTML=Object.entries(TABS).map(([k,v])=>`<button id="b-${k}" onclick="tab('${k}')">${v}</button>`).join('');
+    function tab(k){Object.keys(TABS).forEach(x=>{$('t-'+x).classList.toggle('hidden',x!==k);$('b-'+x).classList.toggle('on',x===k)});if(k==='diary'&&!$('dd').value){$('dd').value=new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10)}}
+    tab('dishes');setTok(tok).then(()=>{dishes();ingr()});
+</script></body></html>

@@ -1,5 +1,7 @@
 package goltsov.nutriPlan.dto;
 
+import goltsov.nutriPlan.entities.EatingName;
+
 import java.util.List;
 
 public record FilterSortRequestDishDto(
@@ -15,7 +17,7 @@ public record FilterSortRequestDishDto(
         List<String> mandatoryIngredients,
         List<String> badIngredients,
 
-        List<String> mandatoryEatingNames,
+        List<EatingName> mandatoryEatingNames,
 
         Integer page,
         Integer size,
@@ -29,6 +31,23 @@ public record FilterSortRequestDishDto(
         carbohydrates = carbohydrates != null ? carbohydrates : new Range<>(0.0, Double.MAX_VALUE);
         fats = fats != null ? fats : new Range<>(0.0, Double.MAX_VALUE);
         rawWeight = rawWeight != null ? rawWeight : new Range<>(0, Integer.MAX_VALUE);
+        goodNames = nullIfEmpty(goodNames);
+        badNames = nullIfEmpty(badNames);
+        mandatoryIngredients = nullIfEmpty(mandatoryIngredients);
+        badIngredients = nullIfEmpty(badIngredients);
+        mandatoryEatingNames = nullIfEmpty(mandatoryEatingNames);
+    }
+
+    private static <T> List<T> nullIfEmpty(List<T> list) {
+        return list == null || list.isEmpty() ? null : list;
+    }
+
+    public Long mandatoryIngredientsCount() {
+        return mandatoryIngredients == null ? null : (long) mandatoryIngredients.size();
+    }
+
+    public Long mandatoryEatingNamesCount() {
+        return mandatoryEatingNames == null ? null : (long) mandatoryEatingNames.size();
     }
 
     public record SortCriterial(

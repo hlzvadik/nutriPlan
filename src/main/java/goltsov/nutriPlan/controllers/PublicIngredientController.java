@@ -19,10 +19,14 @@ public class PublicIngredientController {
 
     @GetMapping("/{name}")
     public ResponseEntity<Ingredient> getByName(@PathVariable String name) {
-        return ResponseEntity.ok(ingredientService.getIngredientByName(name));
+        Ingredient ingredient = ingredientService.getIngredientByName(name);
+        if (ingredient == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(ingredient);
     }
 
-    @GetMapping("/filters")
+    @RequestMapping(value = "/filters", method = {RequestMethod.GET, RequestMethod.POST})
     public ResponseEntity<Page<Ingredient>> getIngredientsWithFiltersAndSort(@RequestBody FilterSortRequestIngredientDto filterSortRequestIngredientDto) {
         return ResponseEntity.ok(ingredientService.getFilteredIngredients(filterSortRequestIngredientDto));
     }

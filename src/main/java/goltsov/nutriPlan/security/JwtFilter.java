@@ -29,7 +29,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getRequestURI().startsWith("/api/auth/");
+        String uri = request.getRequestURI();
+        return uri.startsWith("/api/auth/") || uri.startsWith("/api/public/");
     }
 
     @Override
